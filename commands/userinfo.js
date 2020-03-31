@@ -24,7 +24,11 @@ module.exports = {
         true
       )
       .addField("Status:", user.presence.status, true)
-      .addField("Roles:", message.member.roles.map(r => `${r}`).join(" | "), true)
+      .addField(
+        "Roles:",
+        message.member.roles.map(r => `${r}`).join(" | "),
+        true
+      )
       .setFooter(`ID: ${user.id}`)
       .setTimestamp();
 

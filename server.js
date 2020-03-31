@@ -5,16 +5,17 @@ const app = express();
 
 const cmd = require("node-cmd");
 
-app.post('/git', (req, res) => {
+app.post("/git", (req, res) => {
   // If event is "push"
-  if (req.headers['x-github-event'] == "push") {
-    cmd.run('chmod 777 git.sh'); /* :/ Fix no perms after updating */
-    cmd.get('./git.sh', (err, data) => {  // Run our script
+  if (req.headers["x-github-event"] == "push") {
+    cmd.run("chmod 777 git.sh"); /* :/ Fix no perms after updating */
+    cmd.get("./git.sh", (err, data) => {
+      // Run our script
       if (data) console.log(data);
       if (err) console.log(err);
     });
-    cmd.run('refresh');  // Refresh project
-  
+    cmd.run("refresh"); // Refresh project
+
     console.log("> [GIT] Updated with origin/master");
   }
   return res.sendStatus(200); // Send back OK status
@@ -24,7 +25,7 @@ const fs = require("fs");
 const fetch = require("node-fetch");
 
 var GphApiClient = require("giphy-js-sdk-core");
-var giphy = GphApiClient('yDPZ11efwCaXrOn3F0j2ZQSCH8xkMwEX');
+var giphy = GphApiClient("yDPZ11efwCaXrOn3F0j2ZQSCH8xkMwEX");
 
 const Endb = require("endb");
 const prefixdb = new Endb("sqlite://prefix.sqlite");
@@ -67,7 +68,6 @@ function getSubstringIndex(str, substring, n) {
 
 // All the commands!
 client.on("message", async message => {
-
   let author = message.author;
   let guildid = message.guild.id;
   let content = message.content;
@@ -118,7 +118,7 @@ client.on("message", async message => {
   if (message.content.startsWith(prefix + "foot")) {
     client.commands.get("foot").execute(message, args);
   }
-  
+
   if (message.content.startsWith(prefix + "xkcd")) {
     client.commands.get("xkcd").execute(message, args);
   }
@@ -180,7 +180,7 @@ client.on("message", async message => {
     let icon = `https://cdn.discordapp.com/icons/{guild.id}/{guild.icon}.png`;
 
     const server = new Discord.RichEmbed()
-      .setColor('#ffff00')
+      .setColor("#ffff00")
       .setTitle(name)
       .setThumbnail(icon)
       .addField("Guild ID", id)
@@ -190,13 +190,31 @@ client.on("message", async message => {
 
     message.channel.send(server);
   }
-
-  if (message.content.startsWith(prefix + "prefix")) {
-    let newprefix = message.content.match(/(?<=prefix ).*$/)[0];
+  
+  if (message.content.startsWith("resetprefix")) {
     let author = message.author.username;
     let guildowner = message.guild.owner.user.username;
-    console.log(typeof author);
-    console.log(typeof guildowner);
+    if (author === guildowner) {
+      console.log("Guild owner: " + guildowner);
+      console.log("Msg Author: " + author);
+      let setprefix = await prefixdb.set(guildid, '!');
+      let prefix = await prefixdb.get(guildid);
+      console.log("New prefix :" + prefix);
+      message.channel.send("@TheRadBot's prefix has been set to " + prefix);
+    } else {
+      message.channel.send(
+        "You do not have sufficient permissions to run this command!"
+      );
+    }
+  }
+
+  if (message.content.startsWith(prefix + "prefix")) {
+    // let newprefix = message.content.match(/(?<=prefix ).*$/)[0];
+    let newprefix = args;
+    let author = message.author.username;
+    let guildowner = message.guild.owner.user.username;
+    console.log(typeof(author));
+    console.log(typeof(guildowner));
     console.log(author.username);
     console.log("owner" + guildowner);
     if (author === guildowner) {
@@ -259,9 +277,7 @@ client.on("message", async message => {
 
 client.on("guildMemberAdd", member => {
   //Send the message to a designated channel on a server:
-  const channel = member.guild.channels.find(
-    ch => ch.name === "member-log"
-  );
+  const channel = member.guild.channels.find(ch => ch.name === "member-log");
   //   // Do nothing if the channel wasn't found on this server
   if (!channel) return;
   // Send the message, mentioning the member

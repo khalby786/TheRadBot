@@ -49,7 +49,6 @@ module.exports = {
       )
       .addField("4. `" + prefix + "xkcd`", "Latest comic from XKCD!")
       .addField("5. `" + prefix + "meme`", "Gives a random meme!");
-      
 
     const helpRef = new Discord.RichEmbed()
       .setColor("#0099ff")
