@@ -1,6 +1,6 @@
 {
-  "name": "discord-1337-bot",
-  "version": "0.0.1",
+  "name": "theradbot",
+  "version": "2.7",
   "main": "server.js",
   "scripts": {
     "start": "node server.js"

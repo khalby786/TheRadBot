@@ -28,15 +28,14 @@ module.exports = {
         if (!channel) return;
 
         channel.send(announceEmbed);
-        
+
         channel = message.member.guild.channels.find(
           ch => ch.name === "general"
         );
-        
+
         if (!channel) return;
-        
+
         channel.send(announceEmbed);
-        
       } else {
         message.channel.send(
           "You do not have sufficient permissions to run this command!"
