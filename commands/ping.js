@@ -13,6 +13,5 @@ module.exports = {
 
     // message.channel.sendMessage("Your ping is `" + `${Date.now() - message.createdTimestamp}` + " ms`");
     message.channel.send(timerEmbed);
-    message.client.user.setActivity("I'M A TIMER!!!");
   }
 };

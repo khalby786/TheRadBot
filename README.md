@@ -64,4 +64,3 @@ These commands can only be used by server/guild owners or with certain permissio
 * Add argument for `help` command to know more about each command
 * Add option to get XKCD comic by comic number
 * Add Wikipedia package
-* **Prefix command not working!**
