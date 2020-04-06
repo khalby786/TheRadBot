@@ -4,7 +4,7 @@ module.exports = {
   name: "announce",
   description: "Announce anything in the server!",
   execute(message, args) {
-    if (message.guild.id === "687929303165435991") {
+    if (message.guild.id === "695848662932258848") {
       if (
         message.member.roles.some(role => role.name === "TEAM ADMIN") ||
         message.member.roles.some(role => role.name === "TEAM MEMBERS") ||

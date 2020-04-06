@@ -1,8 +1,15 @@
+// defining port as per Glitch standards
 const port = process.env.PORT || 80;
 
+// express initialisation, although it is unnecessary
 const express = require("express");
 const app = express();
 
+// Endb to store all my prefixes in a SQLite databse
+var Endb = require("endb");
+var prefixdb = new Endb("sqlite://prefix.sqlite");
+
+// cmd and POST request to auto-update my Glitch project whenever a GitHub commit is made
 const cmd = require("node-cmd");
 
 app.post("/git", (req, res) => {
@@ -21,27 +28,18 @@ app.post("/git", (req, res) => {
   return res.sendStatus(200); // Send back OK status
 });
 
+// fs module for defining command handler
 const fs = require("fs");
 const fetch = require("node-fetch");
 
-var GphApiClient = require("giphy-js-sdk-core");
-var giphy = GphApiClient("yDPZ11efwCaXrOn3F0j2ZQSCH8xkMwEX");
-
-const Endb = require("endb");
-const prefixdb = new Endb("sqlite://prefix.sqlite");
-
-const request = require("request");
-const apiLimit = 5;
-
-function soRandom(items) {
-  return Math.floor(Math.random() * items);
-}
+const request = require('request');
 
 // For UptimeRobot to get a OK status
 app.get("/", (request, response) => {
   response.sendStatus(200);
 });
 
+// defining a command handler
 const Discord = require("discord.js");
 const client = new Discord.Client();
 
@@ -54,6 +52,7 @@ const commandFiles = fs
 for (const file of commandFiles) {
   const command = require(`./commands/${file}`);
   client.commands.set(command.name, command);
+  console.log("[Command] Loaded", command.name);
 }
 
 function getSubstringIndex(str, substring, n) {
@@ -73,38 +72,23 @@ client.on("message", async message => {
   let content = message.content;
   let date = new Date();
 
-  if (message.author.bot) {
-    // do nothing
-  } else {
-    console.log("Author: " + author);
-    console.log("Guild ID: " + guildid);
-    console.log("Message : " + content);
-    console.log("Date: " + date);
-    console.log(" ");
-  }
-
+  // ignore message if author is a bot
+  if (message.author.bot) return;
+  
   var prefix;
-
+  
+  // check if the db has a prefix with that guild
   var has = await prefixdb.has(guildid);
 
   if (has === false) {
     prefix = "!";
+    // default prefix
   } else {
+    // already there 
     prefix = await prefixdb.get(guildid);
   }
 
-  // client.user.setActivity("ROBLOX");
-
-  if (message.author.bot) return;
-
-  /* var args = message.content
-    .slice(prefix.length)
-    .trim()
-    .split(/ +/g);
-  const command = args.shift().toLowerCase();*/
-
-  // Exit and stop if the prefix is not there or if user is a bot
-
+  // get the arguments of the message by triming
   const args = message.content.trim().split(/ +/g);
 
   if (message.content.startsWith(prefix + "djs")) {
@@ -170,65 +154,15 @@ client.on("message", async message => {
   }
 
   if (message.content.startsWith(prefix + "server")) {
-    console.log(message.guild);
-    let guild = message.guild;
-    let name = guild.name;
-    let id = guild.id;
-    let region = guild.region;
-    let members = guild.memberCount;
-    let owner = guild.ownerID;
-    let icon = `https://cdn.discordapp.com/icons/{guild.id}/{guild.icon}.png`;
-
-    const server = new Discord.RichEmbed()
-      .setColor("#ffff00")
-      .setTitle(name)
-      .setThumbnail(icon)
-      .addField("Guild ID", id)
-      .addField("Server Region", region)
-      .addField("Member Count", members)
-      .addField("Guild Owner", "@" + owner);
-
-    message.channel.send(server);
+    client.commands.get("server").execute(message, args);
   }
-  
+
   if (message.content.startsWith("resetprefix")) {
-    let author = message.author.username;
-    let guildowner = message.guild.owner.user.username;
-    if (author === guildowner) {
-      console.log("Guild owner: " + guildowner);
-      console.log("Msg Author: " + author);
-      let setprefix = await prefixdb.set(guildid, '!');
-      let prefix = await prefixdb.get(guildid);
-      console.log("New prefix :" + prefix);
-      message.channel.send("@TheRadBot's prefix has been set to " + prefix);
-    } else {
-      message.channel.send(
-        "You do not have sufficient permissions to run this command!"
-      );
-    }
+    
   }
 
   if (message.content.startsWith(prefix + "prefix")) {
-    // let newprefix = message.content.match(/(?<=prefix ).*$/)[0];
-    let newprefix = args;
-    let author = message.author.username;
-    let guildowner = message.guild.owner.user.username;
-    console.log(typeof(author));
-    console.log(typeof(guildowner));
-    console.log(author.username);
-    console.log("owner" + guildowner);
-    if (author === guildowner) {
-      console.log("Guild owner: " + guildowner);
-      console.log("Msg Author: " + author);
-      let setprefix = await prefixdb.set(guildid, args);
-      let prefix = await prefixdb.get(guildid);
-      console.log("New prefix :" + prefix);
-      message.channel.send("@TheRadBot's prefix has been set to " + prefix);
-    } else {
-      message.channel.send(
-        "You do not have sufficient permissions to run this command!"
-      );
-    }
+    client.commands.get("prefix").execute(message, args);    
   }
   // A command for getting my ping
   if (message.content.startsWith(prefix + "ping")) {
@@ -240,41 +174,15 @@ client.on("message", async message => {
   }
 
   if (message.content.startsWith(prefix + "giphy")) {
-    let gifQuery = message.content.match(/(?<=giphy ).*$/)[0];
-
-    message.delete(100);
-
-    giphy
-      .search("gifs", { q: gifQuery, limit: apiLimit })
-      .then(giphyResponse => {
-        let selectedGif =
-          giphyResponse.data[soRandom(apiLimit)].images.original.url;
-
-        message.channel.send(`Hey, check this out: ${selectedGif}`);
-      })
-      .catch(err => {
-        message.channel.send(message, `Nah just try again!`);
-      });
+    client.commands.get("giphy").execute(message, args);
   }
 
   if (message.content.startsWith(prefix + "clear")) {
-    if (message.member.hasPermission("MANAGE_MESSAGES")) {
-      message.channel.fetchMessages().then(
-        function(list) {
-          message.channel.bulkDelete(list);
-        },
-        function(err) {
-          message.channel.send("ERROR: ERROR CLEARING CHANNEL.");
-        }
-      );
-    } else {
-      message.channel.send(
-        "You do not have sufficient permissions to run this command!"
-      );
-    }
+    client.commands.get("clear").execute(message, args);
   }
 });
 
+// See if anyone is joining the server
 client.on("guildMemberAdd", member => {
   //Send the message to a designated channel on a server:
   const channel = member.guild.channels.find(ch => ch.name === "member-log");
