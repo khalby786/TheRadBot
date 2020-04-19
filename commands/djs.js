@@ -13,15 +13,16 @@ const versions = [
 module.exports = {
   name: "djs",
   description:
-    "Searches a query in multiple platforms of library documentation.",
+    "Searches the Discord.js documentation based on the search term. Used as a developer tool.",
   aliases: ["documentation", "search", "library"],
   usage: "<query> (branch)",
   category: "library",
-  run: async (message, args) => {
+  args: true,
+  async execute (message, args, prefix) {
     const { channel, client, author } = message;
     let source = versions.includes(args.slice(-1)[0]) ? args.pop() : "stable";
-    if (source === "11.5-dev")
-      source = `https://raw.githubusercontent.com/discordjs/discord.js/docs/${source}.json`;
+    // if (source === "11.5-dev")
+    //  source = `https://raw.githubusercontent.com/discordjs/discord.js/docs/${source}.json`;
     let q = args.join(" ");
     const queryString = qs.stringify({ src: source, q: q });
     const embed = await (await fetch(

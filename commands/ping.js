@@ -2,11 +2,11 @@ const Discord = require("discord.js");
 
 module.exports = {
   name: "ping",
-  description: "Ping!",
-  execute(message, args) {
+  description: "Gives your ping!",
+  execute(message, args, prefix) {
     var ping = Date.now() - message.createdTimestamp + " ms";
 
-    const timerEmbed = new Discord.RichEmbed()
+    const timerEmbed = new Discord.MessageEmbed()
       .setColor("#660066")
       //.setTitle("Your Ping")
       .addField("Your Ping", ping);

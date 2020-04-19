@@ -2,9 +2,9 @@ const Discord = require("discord.js");
 
 module.exports = {
   name: "announce",
-  description: "Announce anything in the server!",
-  execute(message, args) {
-    if (message.guild.id === "695848662932258848") {
+  description: "Announces <MESSAGE> in an embed to the current channel.",
+  execute(message, args, prefix) {
+    if (message.guild.id === "698841420412354581") {
       if (
         message.member.roles.some(role => role.name === "TEAM ADMIN") ||
         message.member.roles.some(role => role.name === "TEAM MEMBERS") ||
@@ -15,13 +15,13 @@ module.exports = {
 
         message.delete(100);
 
-        const announceEmbed = new Discord.RichEmbed()
+        const announceEmbed = new Discord.MessageEmbed()
           .setColor("#ff1233")
           .setTitle("Boss Announcement!")
           .setDescription("@everyone, " + announcemessage);
 
         //Send the message to a designated channel on a server:
-        let channel = message.member.guild.channels.find(
+        let channel = message.guild.channels.cache.find(
           ch => ch.name === "announcements"
         );
         //   // Do nothing if the channel wasn't found on this server
@@ -29,7 +29,7 @@ module.exports = {
 
         channel.send(announceEmbed);
 
-        channel = message.member.guild.channels.find(
+        channel = message.guild.channels.cache.find(
           ch => ch.name === "general"
         );
 
@@ -50,13 +50,15 @@ module.exports = {
 
         message.delete(100);
 
-        const announceEmbed = new Discord.RichEmbed()
+        const announceEmbed = new Discord.MessageEmbed()
           .setColor("#ff1233")
           .setTitle("Boss Announcement!")
           .setDescription("@everyone, " + announcemessage);
 
         message.channel.send(announceEmbed);
-      } else if (message.member.roles.some(role => role.name === "DEVELOPER")) {
+      } else if (
+        message.member.roles.cache.some(role => role.name === "DEVELOPER")
+      ) {
         console.log("khalby786");
 
         let announcemessage = message.content.match(/(?<=announce ).*$/)[0];
@@ -64,7 +66,7 @@ module.exports = {
 
         message.delete(100);
 
-        const announceEmbed = new Discord.RichEmbed()
+        const announceEmbed = new Discord.MessageEmbed()
           .setColor("#ff1233")
           .setTitle("Announcement!")
           .setDescription("@everyone, " + announcemessage);
@@ -80,9 +82,9 @@ module.exports = {
         let announcemessage = message.content.match(/(?<=announce ).*$/)[0];
         console.log(announcemessage);
 
-        message.delete(100);
+        message.delete();
 
-        const announceEmbed = new Discord.RichEmbed()
+        const announceEmbed = new Discord.MessageEmbed()
           .setColor("#ff1233")
           .setTitle("Announcement!")
           .setDescription("@everyone, " + announcemessage);

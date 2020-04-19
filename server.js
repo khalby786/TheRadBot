@@ -8,6 +8,14 @@ const app = express();
 // Endb to store all my prefixes in a SQLite databse
 var Endb = require("endb");
 var prefixdb = new Endb("sqlite://prefix.sqlite");
+var pointsdb = new Endb("sqlite://points.sqlite");
+
+async function cleardb() {
+  let clear = await pointsdb.clear();
+  let clear2 = await pointsdb.clear();
+}
+
+// cleardb()
 
 // cmd and POST request to auto-update my Glitch project whenever a GitHub commit is made
 const cmd = require("node-cmd");
@@ -32,7 +40,7 @@ app.post("/git", (req, res) => {
 const fs = require("fs");
 const fetch = require("node-fetch");
 
-const request = require('request');
+const request = require("request");
 
 // For UptimeRobot to get a OK status
 app.get("/", (request, response) => {
@@ -67,133 +75,258 @@ function getSubstringIndex(str, substring, n) {
 
 // All the commands!
 client.on("message", async message => {
-  let author = message.author;
+  // ignore message if author is a bot
+  if (message.author.bot) return;
+
   let guildid = message.guild.id;
+  console.log(guildid);
+
+  // get message author's id
+  let user = message.author.id;
+  console.log(user);
+
+  // let all = await pointsdb.all();
+  // console.log(all);
+
+  var key = guildid + "_" + user;
+
+  // check if the db has the user
+  let hasuser = await pointsdb.has(key);
+  console.log("User? " + hasuser);
+
+  if (!hasuser) {
+    // create a new entry in the database for the user with default values
+    let userobj = { user: { xp: 1, lvl: 1 } };
+    let newuser = await pointsdb.set(key, userobj);
+    console.log(newuser);
+    // return;
+  }
+
+  // else get the current xp and level of user
+  let userinfo = await pointsdb.get(key);
+  let xp = userinfo.user.xp;
+  let lvl = userinfo.user.lvl;
+
+  // add new xp
+  xp = xp + 5;
+  let userobj = { user: { xp: xp, lvl: lvl } };
+  let setvalue = await pointsdb.set(key, userobj);
+
+  // a maximum limit for the xps in a particular level
+  let xplimit = lvl * lvl + 30;
+
+  // progress to the next level
+  if (xp > xplimit) {
+    xp = 0;
+    xplimit = lvl * lvl + 30;
+    lvl++;
+    message.reply(`you've progressed to Level ${lvl}! Isn't that awesome?`);
+    userobj = { user: { xp: xp, lvl: lvl } };
+    setvalue = await pointsdb.set(key, userobj);
+  }
+
+  let author = message.author;
   let content = message.content;
   let date = new Date();
 
-  // ignore message if author is a bot
-  if (message.author.bot) return;
-  
-  var prefix;
-  
+  let prefix;
+
   // check if the db has a prefix with that guild
   var has = await prefixdb.has(guildid);
+  console.log("Prefix? " + has);
 
   if (has === false) {
-    prefix = "!";
-    // default prefix
-  } else {
-    // already there 
-    prefix = await prefixdb.get(guildid);
-  }
+    let prefix = await prefixdb.set(guildid, "!");
+    return;
+  } 
+    
+  // already there
+  prefix = await prefixdb.get(guildid);
+  console.log(prefix);
+
+  if (!message.content.startsWith(prefix)) return;
 
   // get the arguments of the message by triming
-  const args = message.content.trim().split(/ +/g);
+  const args = message.content.slice(prefix.length).split(/ +/);
+  const commandName = args.shift().toLowerCase();
+  if (!client.commands.has(commandName)) return;
+  const command = client.commands.get(commandName);
 
-  if (message.content.startsWith(prefix + "djs")) {
-    client.commands.get("djs").run(message, args);
-  }
+  // check for args
+  if (command.args && !args.length) {
+    let reply = `You didn't provide any arguments, ${message.author}!`;
 
-  if (message.content.includes(prefix + "knock knock")) {
-    client.commands.get("jokes").execute(message, args);
-  }
-
-  if (message.content.startsWith(prefix + "foot")) {
-    client.commands.get("foot").execute(message, args);
-  }
-
-  if (message.content.startsWith(prefix + "xkcd")) {
-    client.commands.get("xkcd").execute(message, args);
-  }
-
-  if (message.content.startsWith(prefix + "meme")) {
-    client.commands.get("meme").execute(message, args);
-  }
-
-  if (message.content.startsWith("prefixhelp")) {
-    message.channel.send("Current prefix: `" + prefix + "`");
-  }
-
-  if (message.content.startsWith(prefix + "who is the boss?")) {
-    if (guildid === "687929303165435991") {
-      message.channel.send("Oh, it's the great @khalby786!");
-    } else {
-      let owner = message.guild.owner;
-      message.channel.send(`Oh, it's the great ${owner}!`);
+    if (command.usage) {
+      reply += `\nThe proper usage of this command is: \`${prefix}${command.name} ${command.usage}\``;
     }
+
+    return message.channel.send(reply);
   }
 
-  if (message.content.startsWith(prefix + "who made you?")) {
-    message.channel.send(
-      "I was made by the great web developer, Khaleel Gibran!"
-    );
-  }
-  if (message.content.startsWith(prefix + "who is yedu?")) {
-    if (guildid === "663380850280366081") {
-      message.channel.send(
-        "Oh, It's the Lightning Gamer!!! He is Smoking Hot, Beware of Him!"
-      );
+  // some commands I don't feel like adding to the command handler
+  if (message.content.startsWith(prefix + "points")) {
+    message.channel.send(`
+**XP** 
+[${xp}/${xplimit}]
+
+**Level**
+[${lvl}]`);
+  } else if (message.content.startsWith("prefixhelp")) {
+    let prefix = await prefixdb.get(guildid);
+    message.reply("current prefix of this bot in this server is " + prefix);
+  } else {
+    try {
+      command.execute(message, args, prefix);
+    } catch (e) {
+      console.error(e);
     }
-  }
-
-  if (message.content.startsWith(prefix + "announce")) {
-    client.commands.get("announce").execute(message, args);
-  }
-
-  if (message.content.startsWith(prefix + "help")) {
-    client.commands.get("help").execute(message, args, prefix);
-  }
-
-  if (message.content.startsWith(prefix + "userinfo")) {
-    client.commands.get("userinfo").execute(message, args);
-  }
-
-  if (message.content.startsWith(prefix)) {
-    client.commands.get("math").execute(message, args, prefix);
-  }
-
-  if (message.content.startsWith(prefix + "server")) {
-    client.commands.get("server").execute(message, args);
-  }
-
-  if (message.content.startsWith("resetprefix")) {
-    
-  }
-
-  if (message.content.startsWith(prefix + "prefix")) {
-    client.commands.get("prefix").execute(message, args);    
-  }
-  // A command for getting my ping
-  if (message.content.startsWith(prefix + "ping")) {
-    client.commands.get("ping").execute(message, args);
-  }
-
-  if (message.content.startsWith(prefix + "text2png")) {
-    client.commands.get("text2png").execute(message, args);
-  }
-
-  if (message.content.startsWith(prefix + "giphy")) {
-    client.commands.get("giphy").execute(message, args);
-  }
-
-  if (message.content.startsWith(prefix + "clear")) {
-    client.commands.get("clear").execute(message, args);
   }
 });
 
 // See if anyone is joining the server
 client.on("guildMemberAdd", member => {
-  //Send the message to a designated channel on a server:
-  const channel = member.guild.channels.find(ch => ch.name === "member-log");
-  //   // Do nothing if the channel wasn't found on this server
+  const channel = member.guild.channels.cache.find(ch => ch.name === "logs");
   if (!channel) return;
-  // Send the message, mentioning the member
-  const joinembed = new Discord.RichEmbed()
-    .setColor("#008000")
-    .setTitle(`${member} has joined!`);
+  let date = new Date();
+  console.log(member);
+  channel.send(`\`${date}\` 
+ \`#${member.user.username}\` has joined the server!
+`);
+});
 
-  channel.send(joinembed);
+client.on("guildMemberRemove", member => {
+  const channel = member.guild.channels.cache.find(ch => ch.name === "logs");
+  if (!channel) return;
+  let date = new Date();
+  console.log(member);
+  channel.send(`\`${date}\` 
+ \`#${member.user.username}\` has left the server!
+`);
+});
+
+client.on("guildMemberUpdate", function(oldMember, newMember){
+  const channel = client.channels.cache.find(ch => ch.name === "logs");
+  if (!channel) return;
+  let date = new Date();
+  console.log(oldMember.roles.cache.filter(r => r.id !== oldMember.guild.id).map(roles => `\`${roles.name}\``).join(" **|** ") || "No Roles")
+  const changesEmbed = new Discord.MessageEmbed()
+    .setTitle(`Guild Member Updated!`)
+    .setColor('RED')
+    .addField(`Old Username`, `${oldMember.user.username}`, true)
+    .addField(`New Username`, `${newMember.user.username}`, true)
+    .addField('\u200B', '\u200B')    
+    .addField(`Old Nickname`, `${oldMember.nickname}`, true)
+    .addField(`New Nickname`, `${newMember.nickname}`, true)
+    .addField('\u200B', '\u200B')  
+    .addField(`Old Roles`, `${oldMember.roles.cache.filter(r => r.id !== oldMember.guild.id).map(roles => `\`${roles.name}\``).join(" **|** ") || "No Roles"}`)
+    .addField(`New Roles`, `${newMember.roles.cache.filter(r => r.id !== newMember.guild.id).map(roles => `\`${roles.name}\``).join(" **|** ") || "No Roles"}`)
+ 
+  
+  channel.send(changesEmbed);
+  // channel.send(`\`${date}\` 
+  // \`#${member.user.username}\` has left the server!
+  // `);
+});
+
+
+client.on("channelCreate", channel => {
+  const log = client.channels.cache.find(channel => channel.name === "logs");
+  if (!log) return;
+  let date = new Date();
+  log.send(`\`${date}\` 
+New channel \`#${channel.name}\` created!
+`);
+});
+
+client.on("channelDeleted", channel => {
+  const log = client.channels.cache.find(channel => channel.name === "logs");
+  if (!log) return;
+  let date = new Date();
+  log.send(`\`${date}\`
+Channel \`#${channel.name}\` deleted!
+`);
+});
+
+client.on("channelUpdate", function(oldChannel, newChannel) {
+  const log = client.channels.cache.find(channel => channel.name === "logs");
+  if (!log) return;
+  let date = new Date();
+  log.send(`\`${date}\`
+Channel \`#${oldChannel.name}\` updated!
+`);
+});
+
+client.on("disconnect", function(event) {
+  const log = client.channels.cache.find(channel => channel.name === "logs");
+  if (!log) return;
+  let date = new Date();
+  log.send(
+    `\`${date}\`
+The WebSocket has been closed and will no longer attempt to reconnect`
+  );
+});
+
+client.on("emojiCreate", function(emoji) {
+  const log = client.channels.cache.find(channel => channel.name === "logs");
+  if (!log) return;
+  let date = new Date();
+  log.send(`\`${date}\`
+New emoji created!`);
+});
+
+client.on("emojiDelete", function(emoji) {
+  const log = client.channels.cache.find(channel => channel.name === "logs");
+  if (!log) return;
+  let date = new Date();
+  log.send(`\`${date}\`
+Emoji deleted!`);
+});
+
+client.on("emojiUpdate", function(oldEmoji, newEmoji) {
+  const log = client.channels.cache.find(channel => channel.name === "logs");
+  if (!log) return;
+  let date = new Date();
+  log.send(`\`${date}\`
+Emoji updated!`);
+});
+
+client.on("messageUpdate", function(oldMessage, newMessage) {
+  const log = client.channels.cache.find(channel => channel.name === "logs");
+  if (!log) return;
+  let date = new Date();
+  if (oldMessage.content === newMessage.content) {
+    return;
+  } else {
+    log.send(`\`${date}\`
+**OLD MESSAGE**: ${oldMessage.content}
+**NEW MESSAGE**: ${newMessage.content}`);
+  }
+});
+
+client.on("guildBanAdd", function(guild, user){
+  const log = client.channels.cache.find(channel => channel.name === "logs");
+  if (!log) return;
+  let date = new Date();
+  console.log(`a member is banned from a guild`);
+  log.send(`\`${date}\`
+${user} has been banned from ${guild}`);
+});
+
+client.on("guildBanRemove", function(guild, user){
+  const log = client.channels.cache.find(channel => channel.name === "logs");
+  if (!log) return;
+  let date = new Date();
+  console.log(`a member is banned from a guild`);
+  log.send(`\`${date}\`
+${user} has been unbanned from ${guild}`);
+});
+
+client.on("guildCreate", function(guild){
+  const log = client.channels.cache.find(channel => channel.name === "logs");
+  if (!log) return;
+  let date = new Date();
+  log.send(`\`${date}\`
+Client has joined ${guild}`);
 });
 
 client.login(process.env.DISCORD_BOT_TOKEN);

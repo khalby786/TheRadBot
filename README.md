@@ -18,14 +18,12 @@ For this bot to work properly, the server must have the following text channels:
 
 ### Info
 
-
 | Command | Description | Optional Argument(s) | Required Argument(s) |
 |----------|-------------|-------------------|--------------------|
 | help     | Shows all the commands of this bot. | *None* | *None* |
 | prefixinfo | Gives you the current prefix of the bot. | *None* | *None* |
 | ping | Gives your ping! | *None* | *None* |
 | userinfo | Get a user's information. | *None* | *None* |
-
 
 ### Talk
 

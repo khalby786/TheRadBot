@@ -3,21 +3,25 @@ const moment = require("moment");
 
 module.exports = {
   name: "userinfo",
-  description: "Know more about yourself and other users!",
-  async execute(message, args) {
-    let member = message.author;
-    let user = member;
+  description: "Get a user's information.",
+  async execute(message, args, prefix) {
+    // let member = message.author;  
+    let user = message.author;
+    console.log("User info:");
     console.log(user);
     const joinDiscord = moment(user.createdAt).format("llll");
     const joinServer = moment(user.joinedAt).format("llll");
-    let embed = new Discord.RichEmbed()
+    let guildid = message.guild.id;
+    let avatar = user.avatar;
+    let iconurl = `https://cdn.discordapp.com/icons/${guildid}/${avatar}.webp`
+    let embed = new Discord.MessageEmbed()
       .setAuthor(
         user.username + "#" + user.discriminator,
         user.displayAvatarURL
       )
       .setDescription(`${user}`)
       .setColor(`RANDOM`)
-      .setThumbnail(`${user.displayAvatarURL}`)
+      .setThumbnail(`${iconurl}`)
       .addField(
         "Joined at:",
         `${moment.utc(user.joinedAt).format("dddd, MMMM Do YYYY, HH:mm:ss")}`,
@@ -26,12 +30,15 @@ module.exports = {
       .addField("Status:", user.presence.status, true)
       .addField(
         "Roles:",
-        message.member.roles.map(r => `${r}`).join(" | "),
+        `${message.member.roles.cache
+          .filter(r => r.id !== message.guild.id)
+          .map(roles => `\`${roles.name}\``)
+          .join(" **|** ") || "No Roles"}`,
         true
       )
       .setFooter(`ID: ${user.id}`)
       .setTimestamp();
-
+    
     message.channel.send({ embed: embed });
     return;
   }

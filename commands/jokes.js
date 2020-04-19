@@ -2,8 +2,8 @@ const Discord = require("discord.js");
 
 module.exports = {
   name: "jokes",
-  description: "Tell a knock-knock joke!",
-  execute(message, args) {
+  description: "This command will give you a random stupid knock joke!",
+  execute(message, args, prefix) {
     var jokes = [
       { name: "Dozen", answer: "anybody want to let me in?No,Ok:(" },
       { name: "Avenue", answer: "knocked on this door before?" },
