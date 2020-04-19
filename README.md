@@ -30,7 +30,7 @@ For this bot to work properly, the server must have the following text channels:
 ### Talk
 
 | Command | Description | Optional Argument(s) | Required Argument(s) |
-|----------|-------------|----------|--------|--------------------|
+|----------|-------------|-------------------|--------------------|
 | who is the boss? | This command will let you know who is the boss of this server! | *None* | *None* |
 | who made you? | It wil show who made TheRadBot! Make sure to check it out! | *None* | *None* |
 | foot | It is waste... | *None* | *None* |
@@ -38,7 +38,7 @@ For this bot to work properly, the server must have the following text channels:
 ### Fun
 
 | Command | Description | Optional Argument(s) | Required Argument(s) |
-|----------|-------------|----------|--------|--------------------|
+|----------|-------------|-------------------|--------------------|
 | knock knock joke | This command will give you a random stupid knock joke! | *None* | *None* |
 | giphy <SEARCH_TERM> | Gives you a random GIF according to the search term. | *None* | SEARCH_TERM is the keyword with which GIFs are searched.   |
 | <MATH_EXPRESSION> | No keyword, and a mathematical expression followed by the prefix. | *None* | The MATH_EXPRESSION, of course! |
@@ -48,7 +48,7 @@ For this bot to work properly, the server must have the following text channels:
 ### Reference 
 
 | Command | Description | Optional Argument(s) | Required Argument(s) |
-|----------|-------------|----------|--------|--------------------|
+|----------|-------------|-------------------|--------------------|
 | djs <SEARCH_TERM> | Searches the Discord.js documentation based on the search term. Used as a developer tool. | *None* | SEARCH_TERM is the keyword with which the documentation is searched |
 
 ### Special Commands
@@ -56,7 +56,7 @@ For this bot to work properly, the server must have the following text channels:
 These commands can only be used by server/guild owners or with certain permissions as mentioned.
 
 | Command | Description | Optional Argument(s) | Required Argument(s) |
-|----------|-------------|----------|--------|--------------------|
+|----------|-------------|-------------------|--------------------|
 | prefix <NEW_PREFIX> | Changes the prefix of the bot to <NEW_PREFIX> | *None* | NEW_PREFIX, which is the new prefix of the bot. |
 | announce <MESSAGE> | Announces <MESSAGE> in an embed to the current channel. | *None* | MESSAGE, which is announced to a channel named `general` and `announcements`. |
   
