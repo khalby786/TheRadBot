@@ -10,8 +10,10 @@ function soRandom(items) {
 
 module.exports = {
   name: "giphy",
-  description: "",
-  execute(message, args) {
+  description: "Gives you a random GIF according to the search term.",
+  args: true,
+  usage: '<search term>',
+  execute(message, args, prefix) {
     let gifQuery = message.content.match(/(?<=giphy ).*$/)[0];
 
     message.delete(100);

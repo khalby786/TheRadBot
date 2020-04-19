@@ -4,8 +4,8 @@ var xkcd = require("xkcd");
 
 module.exports = {
   name: "xkcd",
-  description: "Gets the latest XKCD comics!",
-  execute(message, args) {
+  description: "Get the latest comic from XKCD!",
+  execute(message, args, prefix) {
     var num, title, img, alt;
 
     xkcd(function(data) {

@@ -2,24 +2,24 @@ const Discord = require("discord.js");
 
 module.exports = {
   name: "help",
-  description: "Shows all the bot commands!",
+  description: "Shows all the commands of this bot.",
   async execute(message, args, prefix) {
-    const helpEmbed = new Discord.RichEmbed()
+    const helpEmbed = new Discord.MessageEmbed()
       .setColor("#0099ff")
       .setTitle("TheRadBot v2.7")
       .setDescription(
         "The prefix must be typed before the command for it to work. Use the `prefixinfo` command to know the current prefix of the bot."
       );
 
-    const helpInfo = new Discord.RichEmbed()
+    const helpInfo = new Discord.MessageEmbed()
       .setColor("#0099ff")
       .setTitle("Info")
       .addField("1. `" + prefix + "help`", "Shows all the commands of this bot")
       .addField("2. `prefixinfo`", "Gives you the current prefix of the bot")
       .addField("3. `" + prefix + "ping`", "Gives your ping!")
-      .addField("4. `" + prefix + " userinfo`", "Get a user's information");
+      .addField("4. `" + prefix + "userinfo`", "Get a user's information");
 
-    const helpTalk = new Discord.RichEmbed()
+    const helpTalk = new Discord.MessageEmbed()
       .setColor("#0099ff")
       .setTitle("Talk")
       .addField(
@@ -32,7 +32,7 @@ module.exports = {
       )
       .addField("3. `" + prefix + "foot`", "It is waste...");
 
-    const helpFun = new Discord.RichEmbed()
+    const helpFun = new Discord.MessageEmbed()
       .setColor("#0099ff")
       .setTitle("Fun")
       .addField(
@@ -50,7 +50,7 @@ module.exports = {
       .addField("4. `" + prefix + "xkcd`", "Latest comic from XKCD!")
       .addField("5. `" + prefix + "meme`", "Gives a random meme!");
 
-    const helpRef = new Discord.RichEmbed()
+    const helpRef = new Discord.MessageEmbed()
       .setColor("#0099ff")
       .setTitle("Reference")
       .addField(
@@ -58,7 +58,7 @@ module.exports = {
         "Searches the Discord.js documentation based on the search term. **Required argument**: <SEARCH TERM>"
       );
 
-    const helpSpec = new Discord.RichEmbed()
+    const helpSpec = new Discord.MessageEmbed()
       .setColor("#0099ff")
       .setTitle("Special Commands")
       .setDescription("These commands can only be used by guild owners.")

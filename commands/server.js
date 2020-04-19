@@ -3,25 +3,38 @@ const Discord = require("discord.js");
 module.exports = {
   name: "server",
   description: "Know more about the current server.",
-  execute(message, args) {
-    console.log(message.guild);
-    let guild = message.guild;
-    let name = guild.name;
-    let id = guild.id;
-    let region = guild.region;
-    let members = guild.memberCount;
-    let owner = guild.ownerID;
-    let icon = `https://cdn.discordapp.com/icons/{guild.id}/{guild.icon}.png`;
+  execute(message, args, prefix) {
+    
+    const verlvl = {
+      "NONE": "None",
+      "LOW": "Low",
+      "MEDIUM": "Medium",
+      "HIGH": "High\n(╯°□°）╯︵ ┻━┻",
+      "VERY_HIGH": "Very High\n(ノಠ益ಠ)ノ彡┻━┻"
+    };
+    
+    let inline = true;
+    let sicon = message.guild.iconURL;
+    let serverembed = new Discord.MessageEmbed()
+      .setColor("YELLOW")
+      .setThumbnail(sicon)
+      .setAuthor(message.guild.name)
+      .addField("Name", message.guild.name, inline)
+      .addField("ID", message.guild.id, inline)
+      .addField("Owner", message.guild.owner, inline)
+      .setThumbnail(message.guild.iconURL())
+      .addField("Region", message.guild.region, inline)
+      .addField(
+        "Verification Level",
+        verlvl[message.guild.verificationLevel],
+        inline
+      )
+      .addField("Members", `${message.guild.memberCount}`, inline)
+      .addField("Roles", message.guild.roles.cache.size, inline)
+      .addField("Channels", message.guild.channels.cache.size, inline)
+      .setFooter(`Created ${message.guild.createdAt}`)
+      .setTimestamp();
 
-    const server = new Discord.RichEmbed()
-      .setColor("#ffff00")
-      .setTitle(name)
-      .setThumbnail(icon)
-      .addField("Guild ID", id)
-      .addField("Server Region", region)
-      .addField("Member Count", members)
-      .addField("Guild Owner", "@" + owner);
-
-    message.channel.send(server);
+    message.channel.send(serverembed);
   }
 };

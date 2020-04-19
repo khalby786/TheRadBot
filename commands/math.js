@@ -2,7 +2,8 @@ const Discord = require("discord.js");
 
 module.exports = {
   name: "math",
-  description: "Do math!",
+  description: "No keyword, and a mathematical expression followed by the prefix.",
+  usage: "<math expression>",
   execute(message, args, prefix) {
     let calculate =
       "=" + message.content.toLowerCase().substring(prefix.length);

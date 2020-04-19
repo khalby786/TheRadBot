@@ -6,7 +6,7 @@ var prefixdb = new Endb("sqlite://prefix.sqlite");
 module.exports = {
   name: "resetprefix",
   description: "",
-  async execute(message, args) {
+  async execute(message, args, prefix) {
     let guildid = message.guild.id;
     let author = message.author.username;
     let guildowner = message.guild.owner.user.username;

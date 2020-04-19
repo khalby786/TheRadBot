@@ -5,14 +5,16 @@ var prefixdb = new Endb("sqlite://prefix.sqlite");
 
 module.exports = {
   name: "prefix",
-  description: "",
-  async execute(message, args) {
+  description: "Changes the prefix of the bot to <NEW_PREFIX>",
+  args: true,
+  usage: "<new prefix>",
+  async execute(message, args, prefixx) {
     let guildid = message.guild.id;
     let newprefix = args;
     let author = message.author.username;
     let guildowner = message.guild.owner.user.username;
     if (author === guildowner) {
-      let setprefix = await prefixdb.set(guildid, args[1]);
+      let setprefix = await prefixdb.set(guildid, args);
       let prefix = await prefixdb.get(guildid);
       console.log("New prefix :" + prefix);
       message.channel.send("@TheRadBot's prefix has been set to " + prefix);

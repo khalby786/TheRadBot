@@ -1,3 +1,5 @@
+// under construction :)hello hi!
+
 const Discord = require("discord.js");
 const fs = require("fs");
 var text2png = require("text2png");
@@ -5,7 +7,7 @@ var text2png = require("text2png");
 module.exports = {
   name: "text2png",
   description: "Converts text to PNG!",
-  execute(message, args) {
+  execute(message, args, prefix) {
     // let file = args[1] + ".png";
     let text = args[2];
     let color = args[1];
