@@ -4,8 +4,9 @@ const Discord = require("discord.js");
 module.exports = {
   name: "meme",
   description: "Gives a random meme!",
+  cooldown: 5,
   execute(message, args, prefix) {
-    const embed = new Discord.RichEmbed();
+    const embed = new Discord.MessageEmbed();
     message.channel.send(embed.setDescription("Retrieving...")).then(m => {
       fetch("https://www.reddit.com/r/dankmemes.json")
         .then(res => res.json())

@@ -3,6 +3,7 @@ const Discord = require("discord.js");
 module.exports = {
   name: "ping",
   description: "Gives your ping!",
+  cooldown: 3,
   execute(message, args, prefix) {
     var ping = Date.now() - message.createdTimestamp + " ms";
 
@@ -11,7 +12,6 @@ module.exports = {
       //.setTitle("Your Ping")
       .addField("Your Ping", ping);
 
-    // message.channel.sendMessage("Your ping is `" + `${Date.now() - message.createdTimestamp}` + " ms`");
     message.channel.send(timerEmbed);
   }
 };

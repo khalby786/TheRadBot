@@ -4,6 +4,7 @@ const moment = require("moment");
 module.exports = {
   name: "userinfo",
   description: "Get a user's information.",
+  cooldown: 3,
   async execute(message, args, prefix) {
     // let member = message.author;  
     let user = message.author;

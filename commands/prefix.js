@@ -8,6 +8,7 @@ module.exports = {
   description: "Changes the prefix of the bot to <NEW_PREFIX>",
   args: true,
   usage: "<new prefix>",
+  cooldown: 10,
   async execute(message, args, prefixx) {
     let guildid = message.guild.id;
     let newprefix = args;

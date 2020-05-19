@@ -18,6 +18,7 @@ module.exports = {
   usage: "<query> (branch)",
   category: "library",
   args: true,
+  cooldown: 5,
   async execute (message, args, prefix) {
     const { channel, client, author } = message;
     let source = versions.includes(args.slice(-1)[0]) ? args.pop() : "stable";

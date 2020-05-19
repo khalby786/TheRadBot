@@ -40,6 +40,9 @@ app.post("/git", (req, res) => {
 const fs = require("fs");
 const fetch = require("node-fetch");
 
+// ytdl-core
+const ytdl = require("ytdl-core");
+
 const request = require("request");
 
 // For UptimeRobot to get a OK status
@@ -52,6 +55,7 @@ const Discord = require("discord.js");
 const client = new Discord.Client();
 
 client.commands = new Discord.Collection();
+const cooldowns = new Discord.Collection();
 
 const commandFiles = fs
   .readdirSync("./commands")
@@ -138,11 +142,16 @@ client.on("message", async message => {
   if (has === false) {
     let prefix = await prefixdb.set(guildid, "!");
     return;
-  } 
-    
+  }
+
   // already there
   prefix = await prefixdb.get(guildid);
   console.log(prefix);
+
+  if (message.content.startsWith("prefixhelp")) {
+    let prefix = await prefixdb.get(guildid);
+    message.reply("current prefix of this bot in this server is " + prefix);
+  }
 
   if (!message.content.startsWith(prefix)) return;
 
@@ -151,6 +160,32 @@ client.on("message", async message => {
   const commandName = args.shift().toLowerCase();
   if (!client.commands.has(commandName)) return;
   const command = client.commands.get(commandName);
+  console.log("command:");
+  console.log(commandName);
+
+  if (!cooldowns.has(command.name)) {
+    cooldowns.set(command.name, new Discord.Collection());
+  }
+
+  const now = Date.now();
+  const timestamps = cooldowns.get(command.name);
+  const cooldownAmount = (command.cooldown || 3) * 1000;
+
+  if (timestamps.has(message.author.id)) {
+    const expirationTime = timestamps.get(message.author.id) + cooldownAmount;
+
+    if (now < expirationTime) {
+      const timeLeft = (expirationTime - now) / 1000;
+      return message.reply(
+        `please wait ${timeLeft.toFixed(
+          1
+        )} more second(s) before reusing the \`${command.name}\` command.`
+      );
+    }
+  }
+
+  timestamps.set(message.author.id, now);
+  setTimeout(() => timestamps.delete(message.author.id), cooldownAmount);
 
   // check for args
   if (command.args && !args.length) {
@@ -163,28 +198,35 @@ client.on("message", async message => {
     return message.channel.send(reply);
   }
 
-  // some commands I don't feel like adding to the command handler
-  if (message.content.startsWith(prefix + "points")) {
-    message.channel.send(`
-**XP** 
-[${xp}/${xplimit}]
-
-**Level**
-[${lvl}]`);
-  } else if (message.content.startsWith("prefixhelp")) {
-    let prefix = await prefixdb.get(guildid);
-    message.reply("current prefix of this bot in this server is " + prefix);
-  } else {
-    try {
-      command.execute(message, args, prefix);
-    } catch (e) {
-      console.error(e);
-    }
+  try {
+    command.execute(message, args, prefix, client, xplimit, xp, lvl);
+  } catch (e) {
+    console.error(e);
   }
 });
 
+
+// a small canvas modifier code
+// https://discordjs.guide/popular-topics/canvas.html#adding-in-text
+
+const applyText = (canvas, text) => {
+	const ctx = canvas.getContext('2d');
+
+	// Declare a base size of the font
+	let fontSize = 70;
+
+	do {
+		// Assign the font to the context and decrement it so it can be measured again
+		ctx.font = `${fontSize -= 10}px sans-serif`;
+		// Compare pixel width of the text to the canvas minus the approximate avatar size
+	} while (ctx.measureText(text).width > canvas.width - 300);
+
+	// Return the result to use in the actual canvas
+	return ctx.font;
+};
+
 // See if anyone is joining the server
-client.on("guildMemberAdd", member => {
+client.on("guildMemberAdd", async member => {
   const channel = member.guild.channels.cache.find(ch => ch.name === "logs");
   if (!channel) return;
   let date = new Date();
@@ -192,6 +234,43 @@ client.on("guildMemberAdd", member => {
   channel.send(`\`${date}\` 
  \`#${member.user.username}\` has joined the server!
 `);
+  
+  const general = member.guild.channels.cache.find(ch => ch.name === 'general');
+	if (!general) return;
+  
+  const Canvas = require('canvas');
+  
+  const canvas = Canvas.createCanvas(700, 250);
+	const ctx = canvas.getContext('2d');
+
+	const background = await Canvas.loadImage('https://cdn.glitch.com/419b9a7b-abcb-4730-839d-9d43a909c9ab%2Fteamdonut.png?v=1589551172638');
+	ctx.drawImage(background, 0, 0, canvas.width, canvas.height);
+
+	ctx.strokeStyle = '#74037b';
+	ctx.strokeRect(0, 0, canvas.width, canvas.height);
+
+	// Slightly smaller text placed above the member's display name
+	ctx.font = '28px sans-serif';
+	ctx.fillStyle = '#ffffff';
+	ctx.fillText('Welcome to the server,', canvas.width / 2.5, canvas.height / 3.5);
+
+	// Add an exclamation point here and below
+	ctx.font = applyText(canvas, `${member.displayName}!`);
+	ctx.fillStyle = '#ffffff';
+	ctx.fillText(`${member.displayName}!`, canvas.width / 2.5, canvas.height / 1.8);
+
+	ctx.beginPath();
+	ctx.arc(125, 125, 100, 0, Math.PI * 2, true);
+	ctx.closePath();
+	ctx.clip();
+
+	const avatar = await Canvas.loadImage(member.user.displayAvatarURL({ format: 'jpg' }));
+	ctx.drawImage(avatar, 25, 25, 200, 200);
+
+	const attachment = new Discord.MessageAttachment(canvas.toBuffer(), 'welcome-image.png');
+
+	general.send(`Welcome to the server, ${member}!`, attachment);
+  
 });
 
 client.on("guildMemberRemove", member => {
@@ -204,33 +283,50 @@ client.on("guildMemberRemove", member => {
 `);
 });
 
-client.on("guildMemberUpdate", function(oldMember, newMember){
-  const channel = client.channels.cache.find(ch => ch.name === "logs");
+client.on("guildMemberUpdate", function(oldMember, newMember) {
+  const channel = oldMember.guild.channels.cache.find(ch => ch.name === "logs");
   if (!channel) return;
   let date = new Date();
-  console.log(oldMember.roles.cache.filter(r => r.id !== oldMember.guild.id).map(roles => `\`${roles.name}\``).join(" **|** ") || "No Roles")
+  console.log(
+    oldMember.roles.cache
+      .filter(r => r.id !== oldMember.guild.id)
+      .map(roles => `\`${roles.name}\``)
+      .join(" **|** ") || "No Roles"
+  );
   const changesEmbed = new Discord.MessageEmbed()
     .setTitle(`Guild Member Updated!`)
-    .setColor('RED')
+    .setColor("RED")
     .addField(`Old Username`, `${oldMember.user.username}`, true)
     .addField(`New Username`, `${newMember.user.username}`, true)
-    .addField('\u200B', '\u200B')    
+    .addField("\u200B", "\u200B")
     .addField(`Old Nickname`, `${oldMember.nickname}`, true)
     .addField(`New Nickname`, `${newMember.nickname}`, true)
-    .addField('\u200B', '\u200B')  
-    .addField(`Old Roles`, `${oldMember.roles.cache.filter(r => r.id !== oldMember.guild.id).map(roles => `\`${roles.name}\``).join(" **|** ") || "No Roles"}`)
-    .addField(`New Roles`, `${newMember.roles.cache.filter(r => r.id !== newMember.guild.id).map(roles => `\`${roles.name}\``).join(" **|** ") || "No Roles"}`)
- 
-  
+    .addField("\u200B", "\u200B")
+    .addField(
+      `Old Roles`,
+      `${oldMember.roles.cache
+        .filter(r => r.id !== oldMember.guild.id)
+        .map(roles => `\`${roles.name}\``)
+        .join(" **|** ") || "No Roles"}`
+    )
+    .addField(
+      `New Roles`,
+      `${newMember.roles.cache
+        .filter(r => r.id !== newMember.guild.id)
+        .map(roles => `\`${roles.name}\``)
+        .join(" **|** ") || "No Roles"}`
+    );
+
   channel.send(changesEmbed);
-  // channel.send(`\`${date}\` 
+  // channel.send(`\`${date}\`
   // \`#${member.user.username}\` has left the server!
   // `);
 });
 
-
 client.on("channelCreate", channel => {
-  const log = client.channels.cache.find(channel => channel.name === "logs");
+  const log = channel.guild.channels.cache.find(
+    channel => channel.name === "logs"
+  );
   if (!log) return;
   let date = new Date();
   log.send(`\`${date}\` 
@@ -239,7 +335,9 @@ New channel \`#${channel.name}\` created!
 });
 
 client.on("channelDeleted", channel => {
-  const log = client.channels.cache.find(channel => channel.name === "logs");
+  const log = channel.guild.channels.cache.find(
+    channel => channel.name === "logs"
+  );
   if (!log) return;
   let date = new Date();
   log.send(`\`${date}\`
@@ -248,7 +346,9 @@ Channel \`#${channel.name}\` deleted!
 });
 
 client.on("channelUpdate", function(oldChannel, newChannel) {
-  const log = client.channels.cache.find(channel => channel.name === "logs");
+  const log = newChannel.guild.channels.cache.find(
+    channel => channel.name === "logs"
+  );
   if (!log) return;
   let date = new Date();
   log.send(`\`${date}\`
@@ -267,7 +367,9 @@ The WebSocket has been closed and will no longer attempt to reconnect`
 });
 
 client.on("emojiCreate", function(emoji) {
-  const log = client.channels.cache.find(channel => channel.name === "logs");
+  const log = emoji.guild.channels.cache.find(
+    channel => channel.name === "logs"
+  );
   if (!log) return;
   let date = new Date();
   log.send(`\`${date}\`
@@ -275,7 +377,9 @@ New emoji created!`);
 });
 
 client.on("emojiDelete", function(emoji) {
-  const log = client.channels.cache.find(channel => channel.name === "logs");
+  const log = emoji.guild.channels.cache.find(
+    channel => channel.name === "logs"
+  );
   if (!log) return;
   let date = new Date();
   log.send(`\`${date}\`
@@ -283,7 +387,9 @@ Emoji deleted!`);
 });
 
 client.on("emojiUpdate", function(oldEmoji, newEmoji) {
-  const log = client.channels.cache.find(channel => channel.name === "logs");
+  const log = oldEmoji.guild.channels.cache.find(
+    channel => channel.name === "logs"
+  );
   if (!log) return;
   let date = new Date();
   log.send(`\`${date}\`
@@ -291,7 +397,9 @@ Emoji updated!`);
 });
 
 client.on("messageUpdate", function(oldMessage, newMessage) {
-  const log = client.channels.cache.find(channel => channel.name === "logs");
+  const log = newMessage.channel.guild.channels.cache.find(
+    channel => channel.name === "logs"
+  );
   if (!log) return;
   let date = new Date();
   if (oldMessage.content === newMessage.content) {
@@ -303,7 +411,7 @@ client.on("messageUpdate", function(oldMessage, newMessage) {
   }
 });
 
-client.on("guildBanAdd", function(guild, user){
+client.on("guildBanAdd", function(guild, user) {
   const log = client.channels.cache.find(channel => channel.name === "logs");
   if (!log) return;
   let date = new Date();
@@ -312,7 +420,7 @@ client.on("guildBanAdd", function(guild, user){
 ${user} has been banned from ${guild}`);
 });
 
-client.on("guildBanRemove", function(guild, user){
+client.on("guildBanRemove", function(guild, user) {
   const log = client.channels.cache.find(channel => channel.name === "logs");
   if (!log) return;
   let date = new Date();
@@ -321,13 +429,13 @@ client.on("guildBanRemove", function(guild, user){
 ${user} has been unbanned from ${guild}`);
 });
 
-client.on("guildCreate", function(guild){
-  const log = client.channels.cache.find(channel => channel.name === "logs");
-  if (!log) return;
-  let date = new Date();
-  log.send(`\`${date}\`
-Client has joined ${guild}`);
-});
+// client.on("guildCreate", function(guild){
+//   const log = client.channels.cache.find(channel => channel.name === "logs");
+//   if (!log) return;
+//   let date = new Date();
+//   log.send(`\`${date}\`
+// Client has joined ${guild}`);
+// });
 
 client.login(process.env.DISCORD_BOT_TOKEN);
 

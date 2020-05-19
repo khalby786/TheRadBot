@@ -24,6 +24,7 @@ For this bot to work properly, the server must have the following text channels:
 | prefixinfo | Gives you the current prefix of the bot. | *None* | *None* |
 | ping | Gives your ping! | *None* | *None* |
 | userinfo | Get a user's information. | *None* | *None* |
+| serverinfo | Know more about the current server. | *None* | *None* |
 
 ### Talk
 
@@ -48,6 +49,7 @@ For this bot to work properly, the server must have the following text channels:
 | Command | Description | Optional Argument(s) | Required Argument(s) |
 |----------|-------------|-------------------|--------------------|
 | djs <SEARCH_TERM> | Searches the Discord.js documentation based on the search term. Used as a developer tool. | *None* | SEARCH_TERM is the keyword with which the documentation is searched |
+| npm <PACKAGE_NAME> | Gets information regarding an npm package. | *None* | PACKAGE_NAME is the name of the package for which info needs to be obtained. |
 
 ### Special Commands
 
@@ -57,6 +59,8 @@ These commands can only be used by server/guild owners or with certain permissio
 |----------|-------------|-------------------|--------------------|
 | prefix <NEW_PREFIX> | Changes the prefix of the bot to <NEW_PREFIX> | *None* | NEW_PREFIX, which is the new prefix of the bot. |
 | announce <MESSAGE> | Announces <MESSAGE> in an embed to the current channel. | *None* | MESSAGE, which is announced to a channel named `general` and `announcements`. |
+| resetprefix | Reset the prefix of the bot in the current server to `!`. | *None* | *None* |
+| clear <NUMBER_OF_MESSAGES> | Clears numbers of messages from the current channel. | * 
   
 #### TODO
   

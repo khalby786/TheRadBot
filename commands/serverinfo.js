@@ -1,8 +1,9 @@
 const Discord = require("discord.js");
 
 module.exports = {
-  name: "server",
+  name: "serverinfo",
   description: "Know more about the current server.",
+  cooldown: 3,
   execute(message, args, prefix) {
     
     const verlvl = {

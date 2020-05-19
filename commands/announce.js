@@ -3,6 +3,9 @@ const Discord = require("discord.js");
 module.exports = {
   name: "announce",
   description: "Announces <MESSAGE> in an embed to the current channel.",
+  args: true,
+  cooldown: 5,
+  usage: '<message>',
   execute(message, args, prefix) {
     if (message.guild.id === "698841420412354581") {
       if (

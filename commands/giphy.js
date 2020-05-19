@@ -13,6 +13,7 @@ module.exports = {
   description: "Gives you a random GIF according to the search term.",
   args: true,
   usage: '<search term>',
+  cooldown: 5,
   execute(message, args, prefix) {
     let gifQuery = message.content.match(/(?<=giphy ).*$/)[0];
 
