@@ -1,6 +1,9 @@
 // defining port as per Glitch standards
 const port = process.env.PORT || 80;
 
+// env file
+require('dotenv').config()
+
 // express initialisation, although it is unnecessary
 const express = require("express");
 const app = express();
@@ -9,6 +12,7 @@ const app = express();
 var Endb = require("endb");
 var prefixdb = new Endb("sqlite://prefix.sqlite");
 var pointsdb = new Endb("sqlite://points.sqlite");
+var level = new Endb("sqlite://levelconfig.sqlite");
 
 async function cleardb() {
   let clear = await pointsdb.clear();
@@ -94,39 +98,42 @@ client.on("message", async message => {
 
   var key = guildid + "_" + user;
 
-  // check if the db has the user
-  let hasuser = await pointsdb.has(key);
-  console.log("User? " + hasuser);
+  if (await level.get(guildid) === true) {
 
-  if (!hasuser) {
-    // create a new entry in the database for the user with default values
-    let userobj = { user: { xp: 1, lvl: 1 } };
-    let newuser = await pointsdb.set(key, userobj);
-    console.log(newuser);
-    // return;
-  }
+    // check if the db has the user
+    let hasuser = await pointsdb.has(key);
+    console.log("User? " + hasuser);
 
-  // else get the current xp and level of user
-  let userinfo = await pointsdb.get(key);
-  let xp = userinfo.user.xp;
-  let lvl = userinfo.user.lvl;
+    if (!hasuser) {
+      // create a new entry in the database for the user with default values
+      let userobj = { user: { xp: 1, lvl: 1 } };
+      let newuser = await pointsdb.set(key, userobj);
+      console.log(newuser);
+      // return;
+    }
 
-  // add new xp
-  xp = xp + 5;
-  let userobj = { user: { xp: xp, lvl: lvl } };
-  let setvalue = await pointsdb.set(key, userobj);
+    // else get the current xp and level of user
+    let userinfo = await pointsdb.get(key);
+    var xp = userinfo.user.xp;
+    var lvl = userinfo.user.lvl;
 
-  // a maximum limit for the xps in a particular level
-  let xplimit = lvl * lvl + 30;
+    // add new xp
+    xp = xp + 5;
+    let userobj = { user: { xp: xp, lvl: lvl } };
+    let setvalue = await pointsdb.set(key, userobj);
 
-  // progress to the next level
-  if (xp > xplimit) {
-    xp = 0;
-    xplimit = lvl * lvl + 30;
-    lvl++;
-    message.reply(`you've progressed to Level ${lvl}! Isn't that awesome?`);
-    userobj = { user: { xp: xp, lvl: lvl } };
-    setvalue = await pointsdb.set(key, userobj);
+    // a maximum limit for the xps in a particular level
+    var xplimit = lvl * lvl + 30;
+
+    // progress to the next level
+    if (xp > xplimit) {
+      xp = 0;
+      xplimit = lvl * lvl + 30;
+      lvl++;
+      message.reply(`you've progressed to Level ${lvl}! Isn't that awesome?`);
+      userobj = { user: { xp: xp, lvl: lvl } };
+      setvalue = await pointsdb.set(key, userobj);
+    }
   }
 
   let author = message.author;
@@ -148,7 +155,7 @@ client.on("message", async message => {
   prefix = await prefixdb.get(guildid);
   console.log(prefix);
 
-  if (message.content.startsWith("prefixhelp")) {
+  if (message.content.startsWith("prefixinfo")) {
     let prefix = await prefixdb.get(guildid);
     message.reply("current prefix of this bot in this server is " + prefix);
   }
@@ -210,19 +217,19 @@ client.on("message", async message => {
 // https://discordjs.guide/popular-topics/canvas.html#adding-in-text
 
 const applyText = (canvas, text) => {
-	const ctx = canvas.getContext('2d');
+  const ctx = canvas.getContext('2d');
 
-	// Declare a base size of the font
-	let fontSize = 70;
+  // Declare a base size of the font
+  let fontSize = 70;
 
-	do {
-		// Assign the font to the context and decrement it so it can be measured again
-		ctx.font = `${fontSize -= 10}px sans-serif`;
-		// Compare pixel width of the text to the canvas minus the approximate avatar size
-	} while (ctx.measureText(text).width > canvas.width - 300);
+  do {
+    // Assign the font to the context and decrement it so it can be measured again
+    ctx.font = `${fontSize -= 10}px sans-serif`;
+    // Compare pixel width of the text to the canvas minus the approximate avatar size
+  } while (ctx.measureText(text).width > canvas.width - 300);
 
-	// Return the result to use in the actual canvas
-	return ctx.font;
+  // Return the result to use in the actual canvas
+  return ctx.font;
 };
 
 // See if anyone is joining the server
@@ -234,43 +241,43 @@ client.on("guildMemberAdd", async member => {
   channel.send(`\`${date}\` 
  \`#${member.user.username}\` has joined the server!
 `);
-  
+
   const general = member.guild.channels.cache.find(ch => ch.name === 'general');
-	if (!general) return;
-  
+  if (!general) return;
+
   const Canvas = require('canvas');
-  
+
   const canvas = Canvas.createCanvas(700, 250);
-	const ctx = canvas.getContext('2d');
+  const ctx = canvas.getContext('2d');
 
-	const background = await Canvas.loadImage('https://cdn.glitch.com/419b9a7b-abcb-4730-839d-9d43a909c9ab%2Fteamdonut.png?v=1589551172638');
-	ctx.drawImage(background, 0, 0, canvas.width, canvas.height);
+  const background = await Canvas.loadImage('https://cdn.glitch.com/419b9a7b-abcb-4730-839d-9d43a909c9ab%2Fteamdonut.png?v=1589551172638');
+  ctx.drawImage(background, 0, 0, canvas.width, canvas.height);
 
-	ctx.strokeStyle = '#74037b';
-	ctx.strokeRect(0, 0, canvas.width, canvas.height);
+  ctx.strokeStyle = '#74037b';
+  ctx.strokeRect(0, 0, canvas.width, canvas.height);
 
-	// Slightly smaller text placed above the member's display name
-	ctx.font = '28px sans-serif';
-	ctx.fillStyle = '#ffffff';
-	ctx.fillText('Welcome to the server,', canvas.width / 2.5, canvas.height / 3.5);
+  // Slightly smaller text placed above the member's display name
+  ctx.font = '28px sans-serif';
+  ctx.fillStyle = '#ffffff';
+  ctx.fillText('Welcome to the server,', canvas.width / 2.5, canvas.height / 3.5);
 
-	// Add an exclamation point here and below
-	ctx.font = applyText(canvas, `${member.displayName}!`);
-	ctx.fillStyle = '#ffffff';
-	ctx.fillText(`${member.displayName}!`, canvas.width / 2.5, canvas.height / 1.8);
+  // Add an exclamation point here and below
+  ctx.font = applyText(canvas, `${member.displayName}!`);
+  ctx.fillStyle = '#ffffff';
+  ctx.fillText(`${member.displayName}!`, canvas.width / 2.5, canvas.height / 1.8);
 
-	ctx.beginPath();
-	ctx.arc(125, 125, 100, 0, Math.PI * 2, true);
-	ctx.closePath();
-	ctx.clip();
+  ctx.beginPath();
+  ctx.arc(125, 125, 100, 0, Math.PI * 2, true);
+  ctx.closePath();
+  ctx.clip();
 
-	const avatar = await Canvas.loadImage(member.user.displayAvatarURL({ format: 'jpg' }));
-	ctx.drawImage(avatar, 25, 25, 200, 200);
+  const avatar = await Canvas.loadImage(member.user.displayAvatarURL({ format: 'jpg' }));
+  ctx.drawImage(avatar, 25, 25, 200, 200);
 
-	const attachment = new Discord.MessageAttachment(canvas.toBuffer(), 'welcome-image.png');
+  const attachment = new Discord.MessageAttachment(canvas.toBuffer(), 'welcome-image.png');
 
-	general.send(`Welcome to the server, ${member}!`, attachment);
-  
+  general.send(`Welcome to the server, ${member}!`, attachment);
+
 });
 
 client.on("guildMemberRemove", member => {
@@ -283,44 +290,38 @@ client.on("guildMemberRemove", member => {
 `);
 });
 
-client.on("guildMemberUpdate", function(oldMember, newMember) {
+client.on("guildMemberUpdate", function (oldMember, newMember) {
   const channel = oldMember.guild.channels.cache.find(ch => ch.name === "logs");
   if (!channel) return;
   let date = new Date();
-  console.log(
-    oldMember.roles.cache
-      .filter(r => r.id !== oldMember.guild.id)
-      .map(roles => `\`${roles.name}\``)
-      .join(" **|** ") || "No Roles"
-  );
+
   const changesEmbed = new Discord.MessageEmbed()
     .setTitle(`Guild Member Updated!`)
-    .setColor("RED")
-    .addField(`Old Username`, `${oldMember.user.username}`, true)
-    .addField(`New Username`, `${newMember.user.username}`, true)
-    .addField("\u200B", "\u200B")
-    .addField(`Old Nickname`, `${oldMember.nickname}`, true)
-    .addField(`New Nickname`, `${newMember.nickname}`, true)
-    .addField("\u200B", "\u200B")
-    .addField(
-      `Old Roles`,
-      `${oldMember.roles.cache
-        .filter(r => r.id !== oldMember.guild.id)
-        .map(roles => `\`${roles.name}\``)
-        .join(" **|** ") || "No Roles"}`
-    )
-    .addField(
-      `New Roles`,
-      `${newMember.roles.cache
-        .filter(r => r.id !== newMember.guild.id)
-        .map(roles => `\`${roles.name}\``)
-        .join(" **|** ") || "No Roles"}`
-    );
+    .setColor("RED");
+
+  if (oldMember.user.username !== newMember.user.username) {
+    changesEmbed.addField(`**Username changed!**`, `\`${oldMember.user.username}\` ----> \`${newMember.user.username}\``)
+  }
+  if (oldMember.nickname !== newMember.nickname) {
+    changesEmbed.addField(`**Nickname changed!**`, `\`${oldMember.nickname}\` ----> \`${newMember.nickname}\``)
+  }
+  
+
+  // If the role(s) are present on the old member object but no longer on the new one (i.e role(s) were removed)
+  const removedRoles = oldMember.roles.cache.filter(role => !newMember.roles.cache.has(role.id));
+  if (removedRoles.size > 0) {
+    console.log(`The roles ${removedRoles.map(r => r.name)} were removed from ${oldMember.displayName}.`);
+    changesEmbed.addField(`**Roles have been removed**`, ` ${removedRoles.map(r => r.name)} from ${oldMember.displayName}`)
+  }
+  // If the role(s) are present on the new member object but are not on the old one (i.e role(s) were added)
+  const addedRoles = newMember.roles.cache.filter(role => !oldMember.roles.cache.has(role.id));
+  if (addedRoles.size > 0) {
+    console.log(`The roles ${addedRoles.map(r => r.name)} were added to ${oldMember.displayName}.`);
+    changesEmbed.addField(`**Roles have been added**`, ` ${addedRoles.map(r => r.name)} from ${oldMember.displayName}`)
+  }
 
   channel.send(changesEmbed);
-  // channel.send(`\`${date}\`
-  // \`#${member.user.username}\` has left the server!
-  // `);
+
 });
 
 client.on("channelCreate", channel => {
@@ -345,7 +346,7 @@ Channel \`#${channel.name}\` deleted!
 `);
 });
 
-client.on("channelUpdate", function(oldChannel, newChannel) {
+client.on("channelUpdate", function (oldChannel, newChannel) {
   const log = newChannel.guild.channels.cache.find(
     channel => channel.name === "logs"
   );
@@ -356,7 +357,7 @@ Channel \`#${oldChannel.name}\` updated!
 `);
 });
 
-client.on("disconnect", function(event) {
+client.on("disconnect", function (event) {
   const log = client.channels.cache.find(channel => channel.name === "logs");
   if (!log) return;
   let date = new Date();
@@ -366,7 +367,7 @@ The WebSocket has been closed and will no longer attempt to reconnect`
   );
 });
 
-client.on("emojiCreate", function(emoji) {
+client.on("emojiCreate", function (emoji) {
   const log = emoji.guild.channels.cache.find(
     channel => channel.name === "logs"
   );
@@ -376,7 +377,7 @@ client.on("emojiCreate", function(emoji) {
 New emoji created!`);
 });
 
-client.on("emojiDelete", function(emoji) {
+client.on("emojiDelete", function (emoji) {
   const log = emoji.guild.channels.cache.find(
     channel => channel.name === "logs"
   );
@@ -386,7 +387,7 @@ client.on("emojiDelete", function(emoji) {
 Emoji deleted!`);
 });
 
-client.on("emojiUpdate", function(oldEmoji, newEmoji) {
+client.on("emojiUpdate", function (oldEmoji, newEmoji) {
   const log = oldEmoji.guild.channels.cache.find(
     channel => channel.name === "logs"
   );
@@ -396,7 +397,7 @@ client.on("emojiUpdate", function(oldEmoji, newEmoji) {
 Emoji updated!`);
 });
 
-client.on("messageUpdate", function(oldMessage, newMessage) {
+client.on("messageUpdate", function (oldMessage, newMessage) {
   const log = newMessage.channel.guild.channels.cache.find(
     channel => channel.name === "logs"
   );
@@ -411,7 +412,7 @@ client.on("messageUpdate", function(oldMessage, newMessage) {
   }
 });
 
-client.on("guildBanAdd", function(guild, user) {
+client.on("guildBanAdd", function (guild, user) {
   const log = client.channels.cache.find(channel => channel.name === "logs");
   if (!log) return;
   let date = new Date();
@@ -420,7 +421,7 @@ client.on("guildBanAdd", function(guild, user) {
 ${user} has been banned from ${guild}`);
 });
 
-client.on("guildBanRemove", function(guild, user) {
+client.on("guildBanRemove", function (guild, user) {
   const log = client.channels.cache.find(channel => channel.name === "logs");
   if (!log) return;
   let date = new Date();
@@ -437,9 +438,9 @@ ${user} has been unbanned from ${guild}`);
 // Client has joined ${guild}`);
 // });
 
-client.login("NjY0Nzc4OTU5NDgwODE1NjE2.XsPL4g.PwQaxBMWKlp1hmlpFPze4tQu7CE");
+client.login(process.env.TOKEN);
 
 // Just a Glitch tool
-const listener = app.listen(port, function() {
+const listener = app.listen(port, function () {
   console.log("Your app is listening on port " + listener.address().port);
 });

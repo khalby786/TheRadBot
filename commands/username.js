@@ -2,7 +2,7 @@ const Discord = require('discord.js');
 
 module.exports = {
   name: 'username',
-  description: 'Change your username',
+  description: 'Change my username',
   args: true,
   usage: '<new username>',
   cooldown: 30,

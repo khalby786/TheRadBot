@@ -17,13 +17,14 @@ module.exports = {
 
       const helpInfo = new Discord.MessageEmbed()
         .setColor("#0099ff")
-        .addField("Info", "`info` `prefixinfo` `ping` `userinfo` `serverinfo`")
-        .addField("Fun", "`knock knock joke` `giphy` `math` `xkcd` `meme`")
-        .addField("Reference", "`djs` `npm` `get`")
+        .addField("Info", "`info` `prefixinfo` `ping` `userinfo` `serverinfo` `systeminfo`")
+        .addField("Fun", "`knock knock joke` `giphy` `math` `xkcd` `meme` `advice`")
+        .addField("Reference", "`djs` `npm` `get` `movie`")
         .addField("Economy", "`points` `beg` `coins` `give`")
         .addField("Moderation", "`ban` `kick`")
         .addField("Music", "`play`")
-        .addField("Owner-only", "`prefix` `announce` `resetprefix` `clear`");
+        .addField("International Space Station *API*", "`isslocation` `isspeople` ")
+        .addField("Owner-only", "`prefix` `announce` `resetprefix` `clear` `level`");
 
       message.channel.send(helpEmbed);
       message.channel.send(helpInfo);

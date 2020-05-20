@@ -10,7 +10,7 @@ module.exports = {
     const timerEmbed = new Discord.MessageEmbed()
       .setColor("#660066")
       //.setTitle("Your Ping")
-      .addField("Your Ping", ping);
+      .addField("Your Ping :pepeOK:", ping);
 
     message.channel.send(timerEmbed);
   }
