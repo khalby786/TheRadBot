@@ -438,6 +438,7 @@ ${user} has been unbanned from ${guild}`);
 // Client has joined ${guild}`);
 // });
 
+// safety token
 client.login(process.env.TOKEN);
 
 // Just a Glitch tool
