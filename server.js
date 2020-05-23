@@ -91,7 +91,7 @@ client.on("message", async message => {
   // ignore message if author is a bot
   if (message.author.bot) return;
 
-  let guildid = message.guild.id;
+  global.guildid = message.guild.id;
   console.log(guildid);
 
   // get message author's id
@@ -239,7 +239,7 @@ const applyText = (canvas, text) => {
 
 // See if anyone is joining the server
 client.on("guildMemberAdd", async member => {
-  if (await logs.get(guildid) === true) {
+  if (await logs.get(member.guild.id) === true) {
     const channel = member.guild.channels.cache.find(ch => ch.name === "logs");
     if (!channel) return;
     let date = new Date();
@@ -289,8 +289,8 @@ client.on("guildMemberAdd", async member => {
 
 });
 
-client.on("guildMemberRemove", member => {
-  if (await logs.get(guildid) === true) {
+client.on("guildMemberRemove", async member => {
+  if (await logs.get(member.guild.id) === true) {
     const channel = member.guild.channels.cache.find(ch => ch.name === "logs");
     if (!channel) return;
     let date = new Date();
@@ -301,8 +301,8 @@ client.on("guildMemberRemove", member => {
   }
 });
 
-client.on("guildMemberUpdate", function (oldMember, newMember) {
-  if (await logs.get(guildid) === true) {
+client.on("guildMemberUpdate", async function (oldMember, newMember) {
+  if (await logs.get(oldMember.guild.id) === true) {
     const channel = oldMember.guild.channels.cache.find(ch => ch.name === "logs");
     if (!channel) return;
     let date = new Date();
@@ -336,8 +336,8 @@ client.on("guildMemberUpdate", function (oldMember, newMember) {
   }
 });
 
-client.on("channelCreate", channel => {
-  if (await logs.get(guildid) === true) {
+client.on("channelCreate", async channel => {
+  if (await logs.get(channel.guild.id) === true) {
     const log = channel.guild.channels.cache.find(
       channel => channel.name === "logs"
     );
@@ -349,8 +349,8 @@ client.on("channelCreate", channel => {
   }
 });
 
-client.on("channelDeleted", channel => {
-  if (await logs.get(guildid) === true) {
+client.on("channelDeleted", async channel => {
+  if (await logs.get(channel.guild.id) === true) {
     const log = channel.guild.channels.cache.find(
       channel => channel.name === "logs"
     );
@@ -362,8 +362,8 @@ Channel \`#${channel.name}\` deleted!
   }
 });
 
-client.on("channelUpdate", function (oldChannel, newChannel) {
-  if (await logs.get(guildid) === true) {
+client.on("channelUpdate", async function (oldChannel, newChannel) {
+  if (await logs.get(oldChannel.guild.id) === true) {
     const log = newChannel.guild.channels.cache.find(
       channel => channel.name === "logs"
     );
@@ -375,8 +375,8 @@ client.on("channelUpdate", function (oldChannel, newChannel) {
   }
 });
 
-client.on("disconnect", function (event) {
-  if (await logs.get(guildid) === true) {
+client.on("disconnect", async function (event) {
+  if (await logs.get(event.guild.id) === true) {
     const log = client.channels.cache.find(channel => channel.name === "logs");
     if (!log) return;
     let date = new Date();
@@ -387,8 +387,8 @@ The WebSocket has been closed and will no longer attempt to reconnect`
   }
 });
 
-client.on("emojiCreate", function (emoji) {
-  if (await logs.get(guildid) === true) {
+client.on("emojiCreate", async function (emoji) {
+  if (await logs.get(emoji.guild.id) === true) {
     const log = emoji.guild.channels.cache.find(
       channel => channel.name === "logs"
     );
@@ -399,8 +399,8 @@ client.on("emojiCreate", function (emoji) {
   }
 });
 
-client.on("emojiDelete", function (emoji) {
-  if (await logs.get(guildid) === true) {
+client.on("emojiDelete", async function (emoji) {
+  if (await logs.get(emoji.guild.id) === true) {
     const log = emoji.guild.channels.cache.find(
       channel => channel.name === "logs"
     );
@@ -411,8 +411,8 @@ client.on("emojiDelete", function (emoji) {
   }
 });
 
-client.on("emojiUpdate", function (oldEmoji, newEmoji) {
-  if (await logs.get(guildid) === true) {
+client.on("emojiUpdate", async function (oldEmoji, newEmoji) {
+  if (await logs.get(oldEmoji.guild.id) === true) {
     const log = oldEmoji.guild.channels.cache.find(
       channel => channel.name === "logs"
     );
@@ -423,8 +423,8 @@ client.on("emojiUpdate", function (oldEmoji, newEmoji) {
   }
 });
 
-client.on("messageUpdate", function (oldMessage, newMessage) {
-  if (await logs.get(guildid) === true) {
+client.on("messageUpdate", async function (oldMessage, newMessage) {
+  if (await logs.get(oldMessage.guild.id) === true) {
     if (oldMessage.guild.id === '703854911779110912') {
       // do nothing
     } else {
@@ -444,8 +444,8 @@ client.on("messageUpdate", function (oldMessage, newMessage) {
   }
 });
 
-client.on("guildBanAdd", function (guild, user) {
-  if (await logs.get(guildid) === true) {
+client.on("guildBanAdd", async function (guild, user) {
+  if (await logs.get(guild.id) === true) {
     const log = client.channels.cache.find(channel => channel.name === "logs");
     if (!log) return;
     let date = new Date();
@@ -455,8 +455,8 @@ client.on("guildBanAdd", function (guild, user) {
   }
 });
 
-client.on("guildBanRemove", function (guild, user) {
-  if (await logs.get(guildid) === true) {
+client.on("guildBanRemove", async function (guild, user) {
+  if (await logs.get(guild.id) === true) {
     const log = client.channels.cache.find(channel => channel.name === "logs");
     if (!log) return;
     let date = new Date();
@@ -479,5 +479,6 @@ client.login(process.env.TOKEN);
 
 // Just a Glitch tool
 const listener = app.listen(port, function () {
-  console.log("Your app is listening on port " + listener.address().port);
+  console.log("~ Logged in as TheRadBot!")
+  console.log("~ Listening hard on port " + listener.address().port);
 });
