@@ -10,21 +10,21 @@ module.exports = {
     if (args.length === 0 || args[0] === "" || args === undefined) {
       const helpEmbed = new Discord.MessageEmbed()
         .setColor("#0099ff")
-        .setTitle("TheRadBot v2.7")
+        .setTitle("TheRadBot v2.8")
         .setDescription(
           "The prefix must be typed before the command for it to work. Use the `prefixinfo` command to know the current prefix of the bot."
         );
 
       const helpInfo = new Discord.MessageEmbed()
         .setColor("#0099ff")
-        .addField("Info", "`info` `prefixinfo` `ping` `userinfo` `serverinfo` `systeminfo`")
-        .addField("Fun", "`knock knock joke` `giphy` `math` `xkcd` `meme` `advice`")
-        .addField("Reference", "`djs` `npm` `get` `movie`")
-        .addField("Economy", "`points` `beg` `coins` `give`")
-        .addField("Moderation", "`ban` `kick`")
-        .addField("Music", "`play`")
-        .addField("International Space Station *API*", "`isslocation` `isspeople` ")
-        .addField("Owner-only", "`prefix` `announce` `resetprefix` `clear` `level`");
+        .addField(":flower_playing_cards: Fun", "`knock knock joke`, `giphy`, `xkcd`, `meme`, `advice`, `idea`")
+        .addField(":file_folder: Reference", "`djs`, `npm`, `get`, `movie`")
+        .addField(":dollar: Economy", "`points`, `beg`, `coins`, `give`")
+        .addField(":construction: Moderation", "`ban`, `kick`")
+        .addField(":musical_note: Music", "`play`, `stop`, `skip`, `nowplaying`")
+        .addField(":toolbox: Utility", "`help`, `invite`, `weather`, `math`, `prefixinfo`, `ping`, `userinfo`, `serverinfo`, `systeminfo`")
+        .addField(":rocket: International Space Station *API*", "`isslocation` `isspeople` ")
+        .addField(":secret: Owner-only", "`prefix`, `announce`, `resetprefix`, `clear`, `level`, `welcome`");
 
       message.channel.send(helpEmbed);
       message.channel.send(helpInfo);

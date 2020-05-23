@@ -26,7 +26,7 @@ module.exports = {
         message.channel.send(response.headers["content-type"], {
           code: true
         });
-        message.channel.send(newres, {
+        message.channel.send(newres || "*No response*", {
           split: {
             char: '\n'
           },
@@ -42,7 +42,7 @@ module.exports = {
         message.channel.send(response.headers["content-type"], {
           code: true
         });
-        message.channel.send(body, {
+        message.channel.send(body || "*No response*", {
           split: {
             char: '\n'
           },
@@ -55,7 +55,7 @@ module.exports = {
         message.channel.send(response.headers["content-type"], {
           code: true
         });        
-        message.channel.send(body, {
+        message.channel.send(body || "*No response*", {
           split: {
             char: '\n'
           },

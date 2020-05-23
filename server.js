@@ -13,6 +13,8 @@ var Endb = require("endb");
 var prefixdb = new Endb("sqlite://prefix.sqlite");
 var pointsdb = new Endb("sqlite://points.sqlite");
 var level = new Endb("sqlite://levelconfig.sqlite");
+var welcome = new Endb("sqlite://welcomeconfig.sqlite");
+var logs = new Endb("sqlite://logsconfig.sqlite");
 
 async function cleardb() {
   let clear = await pointsdb.clear();
@@ -57,6 +59,9 @@ app.get("/", (request, response) => {
 // defining a command handler
 const Discord = require("discord.js");
 const client = new Discord.Client();
+
+// for music
+global.queue = new Map();
 
 client.commands = new Discord.Collection();
 const cooldowns = new Discord.Collection();
@@ -206,7 +211,7 @@ client.on("message", async message => {
   }
 
   try {
-    command.execute(message, args, prefix, client, xplimit, xp, lvl);
+    command.execute(message, args, prefix, client, xplimit, xp, lvl, queue);
   } catch (e) {
     console.error(e);
   }
@@ -234,200 +239,231 @@ const applyText = (canvas, text) => {
 
 // See if anyone is joining the server
 client.on("guildMemberAdd", async member => {
-  const channel = member.guild.channels.cache.find(ch => ch.name === "logs");
-  if (!channel) return;
-  let date = new Date();
-  console.log(member);
-  channel.send(`\`${date}\` 
+  if (await logs.get(guildid) === true) {
+    const channel = member.guild.channels.cache.find(ch => ch.name === "logs");
+    if (!channel) return;
+    let date = new Date();
+    console.log(member);
+    channel.send(`\`${date}\` 
  \`#${member.user.username}\` has joined the server!
 `);
+  }
 
-  const general = member.guild.channels.cache.find(ch => ch.name === 'general');
-  if (!general) return;
+  if (await welcome.get(member.guild.id) === true) {
+    const general = member.guild.channels.cache.find(ch => ch.name === 'general');
+    if (!general) return;
 
-  const Canvas = require('canvas');
+    const Canvas = require('canvas');
 
-  const canvas = Canvas.createCanvas(700, 250);
-  const ctx = canvas.getContext('2d');
+    const canvas = Canvas.createCanvas(700, 250);
+    const ctx = canvas.getContext('2d');
 
-  const background = await Canvas.loadImage('https://cdn.glitch.com/419b9a7b-abcb-4730-839d-9d43a909c9ab%2Fteamdonut.png?v=1589551172638');
-  ctx.drawImage(background, 0, 0, canvas.width, canvas.height);
+    const background = await Canvas.loadImage('https://cdn.glitch.com/419b9a7b-abcb-4730-839d-9d43a909c9ab%2Fteamdonut.png?v=1589551172638');
+    ctx.drawImage(background, 0, 0, canvas.width, canvas.height);
 
-  ctx.strokeStyle = '#74037b';
-  ctx.strokeRect(0, 0, canvas.width, canvas.height);
+    ctx.strokeStyle = '#74037b';
+    ctx.strokeRect(0, 0, canvas.width, canvas.height);
 
-  // Slightly smaller text placed above the member's display name
-  ctx.font = '28px sans-serif';
-  ctx.fillStyle = '#ffffff';
-  ctx.fillText('Welcome to the server,', canvas.width / 2.5, canvas.height / 3.5);
+    // Slightly smaller text placed above the member's display name
+    ctx.font = '28px sans-serif';
+    ctx.fillStyle = '#ffffff';
+    ctx.fillText('Welcome to the server,', canvas.width / 2.5, canvas.height / 3.5);
 
-  // Add an exclamation point here and below
-  ctx.font = applyText(canvas, `${member.displayName}!`);
-  ctx.fillStyle = '#ffffff';
-  ctx.fillText(`${member.displayName}!`, canvas.width / 2.5, canvas.height / 1.8);
+    // Add an exclamation point here and below
+    ctx.font = applyText(canvas, `${member.displayName}!`);
+    ctx.fillStyle = '#ffffff';
+    ctx.fillText(`${member.displayName}!`, canvas.width / 2.5, canvas.height / 1.8);
 
-  ctx.beginPath();
-  ctx.arc(125, 125, 100, 0, Math.PI * 2, true);
-  ctx.closePath();
-  ctx.clip();
+    ctx.beginPath();
+    ctx.arc(125, 125, 100, 0, Math.PI * 2, true);
+    ctx.closePath();
+    ctx.clip();
 
-  const avatar = await Canvas.loadImage(member.user.displayAvatarURL({ format: 'jpg' }));
-  ctx.drawImage(avatar, 25, 25, 200, 200);
+    const avatar = await Canvas.loadImage(member.user.displayAvatarURL({ format: 'jpg' }));
+    ctx.drawImage(avatar, 25, 25, 200, 200);
 
-  const attachment = new Discord.MessageAttachment(canvas.toBuffer(), 'welcome-image.png');
+    const attachment = new Discord.MessageAttachment(canvas.toBuffer(), 'welcome-image.png');
 
-  general.send(`Welcome to the server, ${member}!`, attachment);
+    general.send(`Welcome to the server, ${member}!`, attachment);
+  }
 
 });
 
 client.on("guildMemberRemove", member => {
-  const channel = member.guild.channels.cache.find(ch => ch.name === "logs");
-  if (!channel) return;
-  let date = new Date();
-  console.log(member);
-  channel.send(`\`${date}\` 
+  if (await logs.get(guildid) === true) {
+    const channel = member.guild.channels.cache.find(ch => ch.name === "logs");
+    if (!channel) return;
+    let date = new Date();
+    console.log(member);
+    channel.send(`\`${date}\` 
  \`#${member.user.username}\` has left the server!
 `);
+  }
 });
 
 client.on("guildMemberUpdate", function (oldMember, newMember) {
-  const channel = oldMember.guild.channels.cache.find(ch => ch.name === "logs");
-  if (!channel) return;
-  let date = new Date();
+  if (await logs.get(guildid) === true) {
+    const channel = oldMember.guild.channels.cache.find(ch => ch.name === "logs");
+    if (!channel) return;
+    let date = new Date();
 
-  const changesEmbed = new Discord.MessageEmbed()
-    .setTitle(`Guild Member Updated!`)
-    .setColor("RED");
+    const changesEmbed = new Discord.MessageEmbed()
+      .setTitle(`Guild Member Updated!`)
+      .setColor("YELLOW");
 
-  if (oldMember.user.username !== newMember.user.username) {
-    changesEmbed.addField(`**Username changed!**`, `\`${oldMember.user.username}\` ----> \`${newMember.user.username}\``)
+    if (oldMember.user.username !== newMember.user.username) {
+      changesEmbed.addField(`**Username changed!**`, `\`${oldMember.user.username}\` ----> \`${newMember.user.username}\``)
+    }
+    if (oldMember.nickname !== newMember.nickname) {
+      changesEmbed.addField(`**Nickname changed!**`, `\`${oldMember.nickname}\` ----> \`${newMember.nickname}\``)
+    }
+
+
+    // If the role(s) are present on the old member object but no longer on the new one (i.e role(s) were removed)
+    const removedRoles = oldMember.roles.cache.filter(role => !newMember.roles.cache.has(role.id));
+    if (removedRoles.size > 0) {
+      console.log(`The roles ${removedRoles.map(r => r.name)} were removed from ${oldMember.displayName}.`);
+      changesEmbed.addField(`:wrench: **Roles have been removed**`, ` \`${removedRoles.map(r => r.name)}\` from ${oldMember.displayName}`)
+    }
+    // If the role(s) are present on the new member object but are not on the old one (i.e role(s) were added)
+    const addedRoles = newMember.roles.cache.filter(role => !oldMember.roles.cache.has(role.id));
+    if (addedRoles.size > 0) {
+      console.log(`The roles ${addedRoles.map(r => r.name)} were added to ${oldMember.displayName}.`);
+      changesEmbed.addField(`:wrench: **Roles have been added**`, ` \`${addedRoles.map(r => r.name)}\` from ${oldMember.displayName}`)
+    }
+
+    channel.send(changesEmbed);
   }
-  if (oldMember.nickname !== newMember.nickname) {
-    changesEmbed.addField(`**Nickname changed!**`, `\`${oldMember.nickname}\` ----> \`${newMember.nickname}\``)
-  }
-  
-
-  // If the role(s) are present on the old member object but no longer on the new one (i.e role(s) were removed)
-  const removedRoles = oldMember.roles.cache.filter(role => !newMember.roles.cache.has(role.id));
-  if (removedRoles.size > 0) {
-    console.log(`The roles ${removedRoles.map(r => r.name)} were removed from ${oldMember.displayName}.`);
-    changesEmbed.addField(`**Roles have been removed**`, ` ${removedRoles.map(r => r.name)} from ${oldMember.displayName}`)
-  }
-  // If the role(s) are present on the new member object but are not on the old one (i.e role(s) were added)
-  const addedRoles = newMember.roles.cache.filter(role => !oldMember.roles.cache.has(role.id));
-  if (addedRoles.size > 0) {
-    console.log(`The roles ${addedRoles.map(r => r.name)} were added to ${oldMember.displayName}.`);
-    changesEmbed.addField(`**Roles have been added**`, ` ${addedRoles.map(r => r.name)} from ${oldMember.displayName}`)
-  }
-
-  channel.send(changesEmbed);
-
 });
 
 client.on("channelCreate", channel => {
-  const log = channel.guild.channels.cache.find(
-    channel => channel.name === "logs"
-  );
-  if (!log) return;
-  let date = new Date();
-  log.send(`\`${date}\` 
-New channel \`#${channel.name}\` created!
+  if (await logs.get(guildid) === true) {
+    const log = channel.guild.channels.cache.find(
+      channel => channel.name === "logs"
+    );
+    if (!log) return;
+    let date = new Date();
+    log.send(`\`${date}\` 
+:new: New channel \`#${channel.name}\` created!
 `);
+  }
 });
 
 client.on("channelDeleted", channel => {
-  const log = channel.guild.channels.cache.find(
-    channel => channel.name === "logs"
-  );
-  if (!log) return;
-  let date = new Date();
-  log.send(`\`${date}\`
+  if (await logs.get(guildid) === true) {
+    const log = channel.guild.channels.cache.find(
+      channel => channel.name === "logs"
+    );
+    if (!log) return;
+    let date = new Date();
+    log.send(`\`${date}\`
 Channel \`#${channel.name}\` deleted!
 `);
+  }
 });
 
 client.on("channelUpdate", function (oldChannel, newChannel) {
-  const log = newChannel.guild.channels.cache.find(
-    channel => channel.name === "logs"
-  );
-  if (!log) return;
-  let date = new Date();
-  log.send(`\`${date}\`
-Channel \`#${oldChannel.name}\` updated!
+  if (await logs.get(guildid) === true) {
+    const log = newChannel.guild.channels.cache.find(
+      channel => channel.name === "logs"
+    );
+    if (!log) return;
+    let date = new Date();
+    log.send(`\`${date}\`
+:tools: Channel \`#${oldChannel.name}\` updated!
 `);
+  }
 });
 
 client.on("disconnect", function (event) {
-  const log = client.channels.cache.find(channel => channel.name === "logs");
-  if (!log) return;
-  let date = new Date();
-  log.send(
-    `\`${date}\`
+  if (await logs.get(guildid) === true) {
+    const log = client.channels.cache.find(channel => channel.name === "logs");
+    if (!log) return;
+    let date = new Date();
+    log.send(
+      `\`${date}\`
 The WebSocket has been closed and will no longer attempt to reconnect`
-  );
+    );
+  }
 });
 
 client.on("emojiCreate", function (emoji) {
-  const log = emoji.guild.channels.cache.find(
-    channel => channel.name === "logs"
-  );
-  if (!log) return;
-  let date = new Date();
-  log.send(`\`${date}\`
-New emoji created!`);
+  if (await logs.get(guildid) === true) {
+    const log = emoji.guild.channels.cache.find(
+      channel => channel.name === "logs"
+    );
+    if (!log) return;
+    let date = new Date();
+    log.send(`\`${date}\`
+:smiley: New emoji created!`);
+  }
 });
 
 client.on("emojiDelete", function (emoji) {
-  const log = emoji.guild.channels.cache.find(
-    channel => channel.name === "logs"
-  );
-  if (!log) return;
-  let date = new Date();
-  log.send(`\`${date}\`
-Emoji deleted!`);
+  if (await logs.get(guildid) === true) {
+    const log = emoji.guild.channels.cache.find(
+      channel => channel.name === "logs"
+    );
+    if (!log) return;
+    let date = new Date();
+    log.send(`\`${date}\`
+:cry: Emoji deleted!`);
+  }
 });
 
 client.on("emojiUpdate", function (oldEmoji, newEmoji) {
-  const log = oldEmoji.guild.channels.cache.find(
-    channel => channel.name === "logs"
-  );
-  if (!log) return;
-  let date = new Date();
-  log.send(`\`${date}\`
-Emoji updated!`);
+  if (await logs.get(guildid) === true) {
+    const log = oldEmoji.guild.channels.cache.find(
+      channel => channel.name === "logs"
+    );
+    if (!log) return;
+    let date = new Date();
+    log.send(`\`${date}\`
+:smile: Emoji updated!`);
+  }
 });
 
 client.on("messageUpdate", function (oldMessage, newMessage) {
-  const log = newMessage.channel.guild.channels.cache.find(
-    channel => channel.name === "logs"
-  );
-  if (!log) return;
-  let date = new Date();
-  if (oldMessage.content === newMessage.content) {
-    return;
-  } else {
-    log.send(`\`${date}\`
-**OLD MESSAGE**: ${oldMessage.content}
-**NEW MESSAGE**: ${newMessage.content}`);
+  if (await logs.get(guildid) === true) {
+    if (oldMessage.guild.id === '703854911779110912') {
+      // do nothing
+    } else {
+      const log = newMessage.channel.guild.channels.cache.find(
+        channel => channel.name === "logs"
+      );
+      if (!log) return;
+      let date = new Date();
+      if (oldMessage.content === newMessage.content) {
+        return;
+      } else {
+        log.send(`\`${date}\`
+:writing_hand: **OLD MESSAGE**: ${oldMessage.content}
+:writing_hand: **NEW MESSAGE**: ${newMessage.content}`);
+      }
+    }
   }
 });
 
 client.on("guildBanAdd", function (guild, user) {
-  const log = client.channels.cache.find(channel => channel.name === "logs");
-  if (!log) return;
-  let date = new Date();
-  console.log(`a member is banned from a guild`);
-  log.send(`\`${date}\`
-${user} has been banned from ${guild}`);
+  if (await logs.get(guildid) === true) {
+    const log = client.channels.cache.find(channel => channel.name === "logs");
+    if (!log) return;
+    let date = new Date();
+    console.log(`a member is banned from a guild`);
+    log.send(`\`${date}\`
+:hammer: ${user} has been banned from ${guild}`);
+  }
 });
 
 client.on("guildBanRemove", function (guild, user) {
-  const log = client.channels.cache.find(channel => channel.name === "logs");
-  if (!log) return;
-  let date = new Date();
-  console.log(`a member is banned from a guild`);
-  log.send(`\`${date}\`
-${user} has been unbanned from ${guild}`);
+  if (await logs.get(guildid) === true) {
+    const log = client.channels.cache.find(channel => channel.name === "logs");
+    if (!log) return;
+    let date = new Date();
+    console.log(`a member is banned from a guild`);
+    log.send(`\`${date}\`
+:hammer: ${user} has been unbanned from ${guild}`);
+  }
 });
 
 // client.on("guildCreate", function(guild){

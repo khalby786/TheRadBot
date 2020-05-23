@@ -33,7 +33,7 @@
     "text2png": "^2.3.0",
     "xkcd": "^1.1.3",
     "yt-search": "^1.1.2",
-    "ytdl-core": "^2.1.2",
+    "ytdl-core": "^2.1.3",
     "ytdl-getinfo": "^1.1.0"
   },
   "engines": {

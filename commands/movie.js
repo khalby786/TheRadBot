@@ -9,7 +9,7 @@ module.exports = {
     args: true,
     usage: '<movie name>',
     async execute(message, args) {
-        let name = message.content.match(/(?<=movie ).*$/)[0]
+        let name = message.content.match(/(?<=movie ).*$/)[0];
         const loadingmsg = await message.channel.send("**Fetching movie info...**");
         fetch(`http://www.omdbapi.com/?t=${name}&apikey=8316f6c1&plot=full`)
             .then(res => res.json())
