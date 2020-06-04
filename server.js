@@ -89,7 +89,7 @@ function getSubstringIndex(str, substring, n) {
 client.on("ready", () => {
   // client.users.cache.size
   client.user.setActivity(`${client.users.cache.size} users | !help`, { type: "WATCHING" });
-}
+});
 
 // All the commands!
 client.on("message", async message => {
