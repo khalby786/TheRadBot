@@ -1,7 +1,7 @@
 const Discord = require("discord.js");
 
 module.exports = {
-  name: "jokes",
+  name: "joke",
   description: "This command will give you a random stupid knock joke!",
   cooldown: 5,
   execute(message, args, prefix) {
