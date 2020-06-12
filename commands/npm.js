@@ -8,6 +8,10 @@ module.exports = {
   args: true,
   cooldown: 3,
   async execute(message, args, prefix) {
+
+    // send loading message
+    const msg = await message.channel.send("**Fetching info...**");
+
     let repo = await libnpm.manifest(args[0]);
 
     var printObj = (obj) => {
@@ -28,7 +32,7 @@ module.exports = {
     r = await r.json();
     let review = await fetch(`https://pkgreview.dev/api/v1/npm/${repo.name}`);
     review = await review.json();
-    console.log(r);
+    msg.delete();
     const npm = new Discord.MessageEmbed()
       .setColor("#ff0000")
       .setTitle(repo.name)

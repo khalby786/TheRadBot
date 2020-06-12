@@ -10,6 +10,11 @@ module.exports = {
     if (!has) {
       await coins.set(message.author.id, 0);
     } 
-    message.channel.send('**Coins** ' + await coins.get(message.author.id) + " coins");
+    const coinembed = new Discord.MessageEmbed()
+    .setTitle(`${message.author.username}'s Global Coins`)
+    .setColor('#eb7134')
+    .setDescription(`${await coins.get(message.author.id)} coins`);
+
+    message.channel.send(coinembed);
   }
 }

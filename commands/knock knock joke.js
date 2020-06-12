@@ -3,6 +3,7 @@ const Discord = require("discord.js");
 module.exports = {
   name: "jokes",
   description: "This command will give you a random stupid knock joke!",
+  cooldown: 5,
   execute(message, args, prefix) {
     var jokes = [
       { name: "Dozen", answer: "anybody want to let me in?No,Ok:(" },
@@ -37,13 +38,6 @@ module.exports = {
       { name: "Mikey", answer: "doesnt fit through this keyhole" }
     ];
 
-    //choosing a random joke from the array
-
-    var knock = function() {
-      var joke = jokes[Math.floor(Math.random() * jokes.length)];
-      return formatJoke(joke);
-    };
-
     //Formatting the output to return in a new line and plug in the output variables
     function formatJoke(joke) {
       return [
@@ -54,6 +48,12 @@ module.exports = {
         joke.name + " " + joke.answer
       ].join("\n");
     }
+
+    //choosing a random joke from the array
+    var knock = function() {
+      var joke = jokes[Math.floor(Math.random() * jokes.length)];
+      return formatJoke(joke);
+    };
 
     message.reply(knock());
   }

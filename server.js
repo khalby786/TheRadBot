@@ -49,8 +49,6 @@ const fetch = require("node-fetch");
 // ytdl-core
 const ytdl = require("ytdl-core");
 
-const request = require("request");
-
 // For UptimeRobot to get a OK status
 app.get("/", (request, response) => {
   response.sendStatus(200);
@@ -86,20 +84,22 @@ function getSubstringIndex(str, substring, n) {
   return index;
 }
 
+client.on("ready", () => {
+  client.user.setActivity(`${client.users.cache.size} users | !help`, { type: "WATCHING" });
+});
+
 // All the commands!
 client.on("message", async message => {
+
+    client.user.setActivity(`${client.users.cache.size} users | !help`, { type: "WATCHING" });
+
   // ignore message if author is a bot
   if (message.author.bot) return;
 
   global.guildid = message.guild.id;
-  console.log(guildid);
 
   // get message author's id
   let user = message.author.id;
-  console.log(user);
-
-  // let all = await pointsdb.all();
-  // console.log(all);
 
   var key = guildid + "_" + user;
 
@@ -107,13 +107,11 @@ client.on("message", async message => {
 
     // check if the db has the user
     let hasuser = await pointsdb.has(key);
-    console.log("User? " + hasuser);
 
     if (!hasuser) {
       // create a new entry in the database for the user with default values
       let userobj = { user: { xp: 1, lvl: 1 } };
       let newuser = await pointsdb.set(key, userobj);
-      console.log(newuser);
       // return;
     }
 
@@ -158,7 +156,6 @@ client.on("message", async message => {
 
   // already there
   prefix = await prefixdb.get(guildid);
-  console.log(prefix);
 
   if (message.content.startsWith("prefixinfo")) {
     let prefix = await prefixdb.get(guildid);
@@ -309,7 +306,8 @@ client.on("guildMemberUpdate", async function (oldMember, newMember) {
 
     const changesEmbed = new Discord.MessageEmbed()
       .setTitle(`Guild Member Updated!`)
-      .setColor("YELLOW");
+      .setColor("YELLOW")
+      .setThumbnail(oldMember.user.displayAvatarURL({ format: 'jpg' }));
 
     if (oldMember.user.username !== newMember.user.username) {
       changesEmbed.addField(`**Username changed!**`, `\`${oldMember.user.username}\` ----> \`${newMember.user.username}\``)
