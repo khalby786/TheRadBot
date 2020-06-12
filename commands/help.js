@@ -17,7 +17,7 @@ module.exports = {
 
       const helpInfo = new Discord.MessageEmbed()
         .setColor("#0099ff")
-        .addField(":flower_playing_cards: Fun", "`joke`, `giphy`, `xkcd`, `meme`, `advice`, `idea`")
+        .addField(":flower_playing_cards: Fun", "`joke`, `chucknorris`, `giphy`, `xkcd`, `meme`, `advice`, `idea`")
         .addField(":file_folder: Reference", "`djs`, `npm`, `get`, `movie`")
         .addField(":dollar: Economy", "`points`, `beg`, `coins`, `give`")
         .addField(":construction: Moderation", "`ban`, `kick`")
