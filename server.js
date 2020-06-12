@@ -328,7 +328,7 @@ client.on("guildMemberUpdate", async function (oldMember, newMember) {
     const addedRoles = newMember.roles.cache.filter(role => !oldMember.roles.cache.has(role.id));
     if (addedRoles.size > 0) {
       console.log(`The roles ${addedRoles.map(r => r.name)} were added to ${oldMember.displayName}.`);
-      changesEmbed.addField(`:wrench: **Roles have been added**`, ` \`${addedRoles.map(r => r.name)}\` from ${oldMember.displayName}`)
+      changesEmbed.addField(`:wrench: **Roles have been added**`, ` \`${addedRoles.map(r => r.name)}\` to ${oldMember.displayName}`)
     }
 
     channel.send(changesEmbed);

@@ -11,8 +11,8 @@ module.exports = {
         let guildowner = message.guild.owner.user.username;
         if (author === guildowner || message.author.id === '634701839983706112') {
             const msg = await message.channel.send('@everyone');
-            message.delete();
             msg.delete();
+            message.delete();
         }
     } else {
         let author = message.author.username;
