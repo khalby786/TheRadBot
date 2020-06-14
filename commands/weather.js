@@ -7,12 +7,12 @@ module.exports = {
     args: true,
     usage: '<city>',
     async execute(message, args) {
-        let weather = await fetch(`https://api.weatherbit.io/v2.0/current?city=${args[0]}&key=${process.env.WEATHER}`);
+        let weather = await fetch(`https://api.weatherbit.io/v2.0/current?city=${args}&key=${process.env.WEATHER}`);
         weather = await weather.json();
         weather = weather.data[0];
 
         const temp = new Discord.MessageEmbed()
-            .setTitle("Current Weather for " + args[0])
+            .setTitle("Current Weather for " + args)
             .setColor("GREEN")
             .setDescription(weather.weather.description)
             .addField("**Temperature**", weather.temp + "°C")
