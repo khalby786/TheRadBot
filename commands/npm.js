@@ -46,7 +46,9 @@ module.exports = {
       .addField("**Deprecated?**", repo.deprecated)
       .addField("**Pkgreview Reviews**", review.reviewsCount || "*Haven't been reviewed yet!*")
       .addField("**Pkgreview Rating**", review.starString || "*Haven't been reviewed yet!*")
-      .addField("**Package ID**", repo._id);
+      .addField("**Package ID**", repo._id)
+      .setTimestamp()
+      .setFooter("Requested by " + message.author.username, message.author.avatarURL());
 
     message.channel.send(npm);
 

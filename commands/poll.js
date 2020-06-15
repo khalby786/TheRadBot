@@ -12,10 +12,11 @@ module.exports = {
         if (!message.member.hasPermission("MANAGE_SERVER")) return message.channel.send("Insufficient permissions to run this command!");
 
         const poll = new Discord.MessageEmbed()
-            .setTitle(`Poll by ${message.author.username}`)
-            .setColor(`rgb(66, 245, 158)`)
+            .setTitle(`**Poll**`)
+            .setColor(`#73ff00`)
             .setFooter("React to vote!")
-            .setDescription(args.join(' '));
+            .setDescription(args.join(' '))
+            .setTimestamp()
 
         let msg = await message.channel.send(poll);
 

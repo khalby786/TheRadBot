@@ -22,7 +22,7 @@ module.exports = {
       )
       .setDescription(`${user}`)
       .setColor(`RANDOM`)
-      .setThumbnail(`${iconurl}`)
+      .setThumbnail(`${message.author.avatarURL()}`)
       .addField(
         "Joined at:",
         `${moment.utc(user.joinedAt).format("dddd, MMMM Do YYYY, HH:mm:ss")}`,

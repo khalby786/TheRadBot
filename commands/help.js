@@ -24,7 +24,8 @@ module.exports = {
         .addField(":musical_note: Music", "`play`, `stop`, `skip`, `nowplaying`")
         .addField(":toolbox: Utility", "`help`, `invite`, `prefixinfo`, `ping`, `userinfo`, `serverinfo`, `systeminfo`, `color`, `weather`, `math`")
         .addField(":rocket: International Space Station *API*", "`isslocation`, `isspeople` ")
-        .addField(":secret: Owner-only", "`prefix`, `announce`, `resetprefix`, `clear`, `ghostping`, `level`, `welcome`, `poll`");
+        .addField(":secret: Owner-only", "`prefix`, `announce`, `resetprefix`, `clear`, `ghostping`, `level`, `welcome`, `poll`")
+        .setFooter("Requested by " + message.author.username, message.author.avatarURL());
 
       message.channel.send(helpEmbed);
       message.channel.send(helpInfo);
@@ -53,7 +54,8 @@ module.exports = {
         .setDescription(`${command.description}`)
         .addField("**Arguments**", arg)
         .addField("**Usage**", "`" + usage + "`")
-        .addField("**Cooldown**", command.cooldown + "s");
+        .addField("**Cooldown**", command.cooldown + "s")
+        .setFooter("Requested by " + message.author.username, message.author.avatarURL());
       
       message.channel.send(commandEmbed);
       console.log(command);
