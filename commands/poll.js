@@ -20,8 +20,8 @@ module.exports = {
         let msg = await message.channel.send(poll);
 
         // react
-        await msg.react(":white_check_mark:");
-        await msg.react(":negative_squared_cross_mark:");
+        await msg.react("✅");
+        await msg.react("❎");
 
         // delete original message
         message.delete();
