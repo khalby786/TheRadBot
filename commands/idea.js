@@ -14,6 +14,6 @@ module.exports = {
             .setColor("rgb(0, 0, 0)")
             .setDescription(`**${thiss}** for **${that}**`);
 
-        message.channel.send(idea);
+        message.channel.send(`**IDEA!** ${thiss} *for* ${that}`);
     }
 }
