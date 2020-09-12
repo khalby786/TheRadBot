@@ -21,7 +21,6 @@ module.exports = {
         .addField(":file_folder: Reference", "`djs`, `npm`, `get`, `movie`")
         .addField(":dollar: Economy", "`points`, `beg`, `coins`, `give`")
         .addField(":construction: Moderation", "`ban`, `kick`")
-        .addField(":musical_note: Music", "`play`, `stop`, `skip`, `nowplaying`")
         .addField(":toolbox: Utility", "`help`, `invite`, `prefixinfo`, `ping`, `userinfo`, `serverinfo`, `systeminfo`, `color`, `weather`, `math`")
         .addField(":rocket: International Space Station *API*", "`isslocation`, `isspeople` ")
         .addField(":secret: Owner-only", "`prefix`, `announce`, `resetprefix`, `clear`, `ghostping`, `level`, `welcome`, `poll`")

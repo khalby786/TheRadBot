@@ -1,3 +1,6 @@
 node_modules
 .env
 *.sqlite
+.glitch-assets
+shrinkwrap.yaml
+package-lock.json

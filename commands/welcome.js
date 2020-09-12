@@ -1,6 +1,9 @@
 const Discord = require('discord.js');
 const endb = require('endb');
-const welcome = new endb("sqlite://welcomeconfig.sqlite");
+const welcome = new endb({
+    adapter: "mongodb",
+    uri: `${process.env.MONGODB_URI}welcome?retryWrites=true&w=majority`
+});
 
 module.exports = {
     name: 'welcome',

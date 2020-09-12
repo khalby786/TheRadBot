@@ -13,12 +13,12 @@ module.exports = {
             .setTitle(res.name.value)
             .setColor(res.hex.value)
             .setThumbnail(`http://singlecolorimage.com/get/${randomColor}/400x400`)
-            .addField("**HEX**", res.hex.value, true)
-            .addField("**RGB**", res.rgb.value, true)
-            .addField("**HSL**", res.hsl.value, true)
-            .addField("**HSV**", res.hsv.value, true)
-            .addField("**CMYK**", res.cmyk.value, true)
-            .addField("**XYZ**", res.XYZ.value, true)
+            .addField("**HEX**", "`" + res.hex.value + "`", true)
+            .addField("**RGB**", "`" + res.rgb.value + "`", true)
+            .addField("**HSL**", "`" + res.hsl.value + "`", true)
+            .addField("**HSV**", "`" + res.hsv.value + "`", true)
+            .addField("**CMYK**", "`" + res.cmyk.value + "`", true)
+            .addField("**XYZ**", "`" + res.XYZ.value + "`", true)
 
         message.channel.send(color);
     }

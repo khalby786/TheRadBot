@@ -1,20 +1,37 @@
-// defining port as per Glitch standards
+require('dotenv').config();
+
 const port = process.env.PORT || 80;
-
-// env file
-require('dotenv').config()
-
-// express initialisation, although it is unnecessary
+const cmd = require("node-cmd");
 const express = require("express");
 const app = express();
-
-// Endb to store all my prefixes in a SQLite databse
+const fs = require("fs");
+const fetch = require("node-fetch");
+const ytdl = require("ytdl-core");
+const Discord = require("discord.js");
+const client = new Discord.Client();
+console.log(process.env.MONGODB_URI);
 var Endb = require("endb");
-var prefixdb = new Endb("sqlite://prefix.sqlite");
-var pointsdb = new Endb("sqlite://points.sqlite");
-var level = new Endb("sqlite://levelconfig.sqlite");
-var welcome = new Endb("sqlite://welcomeconfig.sqlite");
-var logs = new Endb("sqlite://logsconfig.sqlite");
+// var prefixdb = new Endb("sqlite://prefix.sqlite");
+var prefixdb = new Endb({
+  adapter: "mongodb",
+  uri: `${process.env.MONGODB_URI}prefixdb?retryWrites=true&w=majority`
+})
+var pointsdb = new Endb({
+  adapter: "mongodb",
+  uri: `${process.env.MONGODB_URI}pointsdb?retryWrites=true&w=majority`
+});
+var level = new Endb({
+  adapter: "mongodb",
+  uri: `${process.env.MONGODB_URI}level?retryWrites=true&w=majority`
+});
+var welcome = new Endb({
+  adapter: "mongodb",
+  uri: `${process.env.MONGODB_URI}welcome?retryWrites=true&w=majority`
+});
+var logs = new Endb({
+  adapter: "mongodb",
+  uri: `${process.env.MONGODB_URI}logs?retryWrites=true&w=majority`
+});
 
 async function cleardb() {
   let clear = await pointsdb.clear();
@@ -22,9 +39,6 @@ async function cleardb() {
 }
 
 // cleardb()
-
-// cmd and POST request to auto-update my Glitch project whenever a GitHub commit is made
-const cmd = require("node-cmd");
 
 app.post("/git", (req, res) => {
   // If event is "push"
@@ -42,23 +56,10 @@ app.post("/git", (req, res) => {
   return res.sendStatus(200); // Send back OK status
 });
 
-// fs module for defining command handler
-const fs = require("fs");
-const fetch = require("node-fetch");
-
-// ytdl-core
-const ytdl = require("ytdl-core");
-
-// For UptimeRobot to get a OK status
 app.get("/", (request, response) => {
   response.sendStatus(200);
 });
 
-// defining a command handler
-const Discord = require("discord.js");
-const client = new Discord.Client();
-
-// for music
 global.queue = new Map();
 
 client.commands = new Discord.Collection();
@@ -465,18 +466,8 @@ client.on("guildBanRemove", async function (guild, user) {
   }
 });
 
-// client.on("guildCreate", function(guild){
-//   const log = client.channels.cache.find(channel => channel.name === "logs");
-//   if (!log) return;
-//   let date = new Date();
-//   log.send(`\`${date}\`
-// Client has joined ${guild}`);
-// });
-
-// safety token
 client.login(process.env.TOKEN);
 
-// Just a Glitch tool
 const listener = app.listen(port, function () {
   console.log("~ Logged in as TheRadBot!")
   console.log("~ Listening hard on port " + listener.address().port);

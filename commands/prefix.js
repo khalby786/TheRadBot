@@ -1,7 +1,10 @@
 const Discord = require("discord.js");
 
 var Endb = require("endb");
-var prefixdb = new Endb("sqlite://prefix.sqlite");
+var prefixdb = new Endb({
+  adapter: "mongodb",
+  uri: `${process.env.MONGODB_URI}prefixdb?retryWrites=true&w=majority`
+});
 
 module.exports = {
   name: "prefix",

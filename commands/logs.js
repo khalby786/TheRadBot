@@ -1,7 +1,10 @@
 const endb = require('endb');
 const Discord = require('discord.js');
 
-const logs = new endb("sqlite://logsconfig.sqlite");
+const logs = new endb({
+    adapter: "mongodb",
+    uri: `${process.env.MONGODB_URI}logsconfig?retryWrites=true&w=majority`
+});
 
 module.exports = {
     name: 'logs',

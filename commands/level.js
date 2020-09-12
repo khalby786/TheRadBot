@@ -1,7 +1,10 @@
 const endb = require('endb');
 const Discord = require('discord.js');
 
-const level = new endb("sqlite://levelconfig.sqlite");
+const level = new endb({
+    adapter: "mongodb",
+    uri: `${process.env.MONGODB_URI}levelconfig?retryWrites=true&w=majority`
+});
 
 module.exports = {
     name: 'level',
